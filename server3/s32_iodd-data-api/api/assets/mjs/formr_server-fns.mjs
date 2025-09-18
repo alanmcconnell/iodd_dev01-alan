@@ -348,7 +348,7 @@
                            async function onRoute( pReq, pRes )    { onRoute_( aMethod, pReq, pRes, aRoute_, pValidArgs, fmtSQL ) } // .(40405.02.1 Use Original route)
 //                                        async  ( pReq, pRes ) => { onRoute_( aMethod, pReq, pRes, aRoute,  pValidArgs, fmtSQL ) } //#.(40405.02.1)
     
-            console.log( `DEBUG: Registering ${aMethod.toUpperCase()} route: ${aRoute}` )                  // DEBUG: Add logging
+//          console.log( `DEBUG: Registering ${aMethod.toUpperCase()} route: ${aRoute}` )                  //# .(50918.04b.1 RAM Remmove).(50918.04.1 CAI Add DEBUG: Add logging)
     
     switch (aMethod) {
 //    case 'get'   : pApp.get(    aRoute, async  ( pReq, pRes ) => { onRoute ( aMethod, pReq, pRes, aRoute, pValidArgs, fmtSQL ) } ); break

@@ -6,7 +6,7 @@
         },
         {
             "name": "IODD_dev02-robin",
-            "path": "."
+            "path": "."  
         }
     ],
     "settings": {

@@ -347,6 +347,9 @@
 
                            async function onRoute( pReq, pRes )    { onRoute_( aMethod, pReq, pRes, aRoute_, pValidArgs, fmtSQL ) } // .(40405.02.1 Use Original route)
 //                                        async  ( pReq, pRes ) => { onRoute_( aMethod, pReq, pRes, aRoute,  pValidArgs, fmtSQL ) } //#.(40405.02.1)
+    
+            console.log( `DEBUG: Registering ${aMethod.toUpperCase()} route: ${aRoute}` )                  // DEBUG: Add logging
+    
     switch (aMethod) {
 //    case 'get'   : pApp.get(    aRoute, async  ( pReq, pRes ) => { onRoute ( aMethod, pReq, pRes, aRoute, pValidArgs, fmtSQL ) } ); break
       case 'get'   : pApp.get(    aRoute, onRoute ); break
@@ -529,9 +532,15 @@
 
   function  setErr( pApp, aMsg, s ) {
 
+       // Handle root path requests
+/*       pApp.get( '/', function( pReq, pRes ) {
+                          pRes.redirect( '/api2' )
+            } )
+*/
        pApp.use( '*', function( pReq, pRes ) {
-                          sndErr(  pRes, `${aMsg}`,  [ pReq.baseUrl ] )
-                          sayErr(        `${aMsg}: '${ pReq.baseUrl }'\n` )                                 // .(30402.05.8 RAM Add).(30414.02.1 RAM Added baseUrl)
+                          console.log( `DEBUG: Catch-all route hit for: ${pReq.method} ${pReq.url}` )      // DEBUG: Add logging
+                          sndErr(  pRes, `${aMsg}`,  [ pReq.url ] )                                        // Changed from baseUrl to url
+                          sayErr(        `${aMsg}: '${ pReq.url }'\n` )                                    // .(30402.05.8 RAM Add).(30414.02.1 RAM Changed from baseUrl to url)
             } )
                           sayMsg( `${aMsg}${ s || '' }, set` )
          }; // eof setErr

@@ -1,0 +1,9 @@
+Archive
+node_modules
+.env
+.DS_Store
+yarn.lock
+*.bak
+*_v[0-9]*
+*_t[0-9]*
+

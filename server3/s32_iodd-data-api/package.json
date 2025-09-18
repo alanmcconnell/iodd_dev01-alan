@@ -1,0 +1,27 @@
+{
+    "name": "s36-mysql-data-api",
+    "version": "0.01.010",
+    "author": "Robin Mattern",
+    "license": "ISC",
+    "type": "module",
+    "dependencies": {
+        "cookie-parser": "^1.4.7",
+        "cors": "^2.8.5"
+    },
+    "scripts": {
+        "start": "nodemon server.mjs",
+        "restart": "clear && open http://127.0.0.1:5501/client/iodd-New-02/index.html & npm start"
+    },
+    "browserslist": {
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
+    }
+}

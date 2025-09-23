@@ -3,16 +3,17 @@
  * CRUD operations for roles table
  */
 
-import mysql from 'mysql2/promise';
+// import mysql from 'mysql2/promise';
+   const mysql = import('mysql2/promise'); // Dynamic import for mysql2
 
 async function rolesHandler(req, res) {
     try {
         // Create database connection
         const pool = mysql.createPool({
-            host: process.env.DB_HOST || 'localhost',
-            user: process.env.DB_USER || 'nimdas',
-            password: process.env.DB_PASSWORD || 'FormR!1234',
-            database: process.env.DB_NAME || 'iodd',
+            host: process.env.DB_HOST,
+            user: process.env.DB_USER,
+            password: process.env.DB_PASSWORD,
+            database: process.env.DB_NAME,
             waitForConnections: true,
             connectionLimit: 10,
             queueLimit: 0

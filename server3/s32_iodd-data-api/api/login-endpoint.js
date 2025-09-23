@@ -4,18 +4,18 @@
  */
 
 const mysql = require('mysql2/promise');
-const dotenv = require('dotenv');
+// const dotenv = require('dotenv');            //#.(50922.02a.1 RAM).(50922.02.1 CAI Wrong!)
 
 // Load environment variables
-dotenv.config();
+// dotenv.config();                             //#.(50922.02a.2 RAM).(50922.02.2 CAI Wrong!)
 
 // Create MySQL connection pool
 const pool = mysql.createPool({
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'UserName',
-    password: process.env.DB_PASSWORD || 'PassWord',
-    database: process.env.DB_NAME || 'iodd',
-    port: process.env.DB_PORT || 3306,
+    host: process.env.DB_HOST,                  // .(50922.02a.3 RAM Remove || "localhost" ).(50922.02.2 CAI Wrong! Beg)
+    user: process.env.DB_USER, 
+    password: process.env.DB_PASSWORD, 
+    database: process.env.DB_NAME, 
+    port: process.env.DB_PORT,                  // .(50922.02a.3 End).(50922.02.2 End)
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0

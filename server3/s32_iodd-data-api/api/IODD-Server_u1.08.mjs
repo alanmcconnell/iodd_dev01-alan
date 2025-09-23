@@ -101,8 +101,9 @@
 # .(30528.04  5/28/23 RAM  3:00p|  Add Abort to sayMsg, Forgot to sayMsg
 # .(30528.05  5/28/23 RAM  6:00p|  Add say('Done', "handler") and sayMsg('End')
 # .(30529.01  5/29/23 RAM 12:22p|  Fix spacing for saySQL on Error
-# .(50702.02  7/02/53 RAM  1:12p|  Change version of formr_server-fns
-
+# .(50702.02  7/02/25 RAM  1:12p|  Change version of formr_server-fns
+# .(50918.05  9/18/25 CAI  2:00p|  Use aAPI_Path, not aAPI_URL for Exprfess Routes
+#
 ##PRGM     +====================+===============================================+
 ##ID                            |
 ##SRCE =========================+===============================================+========================== #  ===============================  #
@@ -171,12 +172,18 @@
             aAPI_URL      =  aAPI_URL.replace( /{PORT}/, nPort )
             aRemote_Host  = aRemote_Host.replace( /{PORT}/, nPort )                     // .(50707.02.x RAM Try this)
 
-     global.aAPI_Host    =  aAPI_URL
-     global.aRemote_Host =  aRemote_Host                                                // .(50707.02.1 RAM Needed in formr_server-fns.start)
+     // Extract just the path portion for Express routes
+        var aAPI_Path    =  new URL(aAPI_URL).pathname                                  // .(50918.05.1 CAI Create API_Path as /api2/)
+//   global.aAPI_Host    =  aAPI_URL                                                    //#.(50918.05.2 CAI Not full URL)
+     global.aAPI_Host    =  aAPI_Path                                                   // .(50918.05.2 CAI Use API_Path as /api2)
 //     var  aAPI_Host     = `${aRemote_Host}${aAPI_URL}`                                //#.(50707.02.5 RAM Wrong) 
+     global.aRemote_Host =  aRemote_Host                                                // .(50707.02.1 RAM Needed in formr_server-fns.start)
+
             console.log( "")
             console.log( `aRemote_Host: '${aRemote_Host}'`)
-            console.log( `aAPI_Host:    '${aAPI_Host}'`)
+            console.log( `aAPI_Host:     Was aAPI_URL:  '${aAPI_URL}'`)                 // .(50918.05.3 CAI Use aAPI_Host)
+            console.log( `aAPI_Host:     Now aAPI_Path: '${aAPI_Path}' (path only for Express routes)`) // .(50918.05.4 CAI Use aAPI_Path, not aAPI_Host)
+            console.log( `aAPI_URL:     '${aAPI_URL}' (full URL)`)                      // .(50918.05.5 CAI Use aAPI_URL)
             console.log( `nPort:        '${nPort}'`);
   
 (async function() {

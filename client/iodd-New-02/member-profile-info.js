@@ -35,7 +35,7 @@ class MemberProfileInfo {
 
     async loadRoles() {
         try {
-            const response = await fetch('http://localhost:54032/api2/webpage_roles_view');
+            const response = await fetch('http://localhost:3004/api/webpage_roles_view');
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -107,7 +107,7 @@ class MemberProfileInfo {
 
     async loadMembersList() {
         try {
-            const response = await fetch('http://localhost:54032/api2/list/members');
+            const response = await fetch('http://localhost:3004/api/list/members');
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -196,7 +196,7 @@ class MemberProfileInfo {
             this.showMessage('Loading member data...', 'loading');
 
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-            const response = await fetch(`http://localhost:54032/api2/members?id=${encodeURIComponent(memberId)}`, {
+            const response = await fetch(`http://localhost:3004/api/members?id=${encodeURIComponent(memberId)}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -331,7 +331,7 @@ class MemberProfileInfo {
             });
 
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-            const response = await fetch('http://localhost:54032/api2/member', {
+            const response = await fetch('http://localhost:3004/api/member', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -412,7 +412,7 @@ class MemberProfileInfo {
             });
 
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-            const response = await fetch('http://localhost:54032/api2/member', {
+            const response = await fetch('http://localhost:3004/api/member', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -558,7 +558,7 @@ class MemberProfileInfo {
             this.showMessage('Deleting...', 'loading');
 
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-            const response = await fetch(`http://localhost:54032/api2/member?id=${this.selectedMemberId}`, {
+            const response = await fetch(`http://localhost:3004/api/member?id=${this.selectedMemberId}`, {
                 method: 'DELETE',
                 headers: {
                     'X-CSRF-TOKEN': csrfToken || '',

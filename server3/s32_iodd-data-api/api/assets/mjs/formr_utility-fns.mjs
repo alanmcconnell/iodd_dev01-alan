@@ -130,12 +130,13 @@ async function  setAPI_URL( pEnv,  aNum ) {                                     
                        sayEnvErr( aFile ); return null                                                      // .(30412.01.3)
         } else {
 //     var  pFS     =  await import( 'fs' )                                                                 //#.(30412.01.4)
-       var  aFile   = `${ aPath }.env`
+       if (!aFile) { aFile = `${ aPath }.env` }  // Use provided file path or construct default
+       // aFile is now set - use it as is
 //     var  pFS     =  await import( 'fs/promises' )                                                        // .(30412.01.2 RAM Get pFS above so this function doesn't have to be a async function)
-//          console.log( `getEnv[2]             Reading local file, '${aFile}'` )
-       if (!pFS.existsSync( aFile )) { sayEnvErr( aFile );
+            console.log( `getEnv_sync[2]        Reading local file, '${aFile}'` )
+       if (!pFS.default.existsSync( aFile )) { sayEnvErr( aFile );
     return  process.env }                                     // .(30319.01.1 RAM Do nothing if .env not found).(30322.03.6 RAM Display error)
-       var  pEnv    =  fmtEnv(  pFS.readFileSync( aFile, 'ASCII' ) )
+       var  pEnv    =  fmtEnv(  pFS.default.readFileSync( aFile, 'ASCII' ) )
             pEnv    =  bNewOnly ? pVars : { ...process.env,  ...pEnv }
             }
     return  pEnv

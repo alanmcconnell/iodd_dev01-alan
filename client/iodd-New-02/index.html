@@ -360,7 +360,7 @@
                 <a href="#">Contact</a>
             </div>
             <div class="nav-buttons">
-                <button class="btn" onclick="window.location.href='http://127.0.0.1:5505/client/c01_client-first-app/login_client.html'">Login</button>
+                <button class="btn" onclick="window.location.href='http://localhost:3005/login_client.html?redirect_url=' + encodeURIComponent('http://localhost:5505/client/iodd-New-02/member-profile.html') + '&failure_url=' + encodeURIComponent('http://localhost:5505/client/iodd-New-02/index.html')">Login</button>
                 <button class="btn" onclick="acm_SecurePopUp('The register option is not available.','OK:ok')">Register</button>
             </div>
         </nav>

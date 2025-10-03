@@ -3,8 +3,7 @@
  * CRUD operations for roles table
  */
 
-// import mysql from 'mysql2/promise';
-   const mysql = import('mysql2/promise'); // Dynamic import for mysql2
+import mysql from 'mysql2/promise';
 
 async function rolesHandler(req, res) {
     try {
@@ -22,7 +21,7 @@ async function rolesHandler(req, res) {
         if (req.method === 'GET') {
             // Get all roles
             const [rows] = await pool.execute(
-                'SELECT * FROM iodd.roles ORDER BY Name'
+                `SELECT * FROM ${process.env.DB_NAME}.roles ORDER BY Name`
             );
             
             return res.json({
@@ -46,7 +45,7 @@ async function rolesHandler(req, res) {
             if (id && id !== '0') {
                 // Update existing role
                 const [result] = await pool.execute(
-                    'UPDATE iodd.roles SET Name = ?, Scope = ?, Active = ?, UpdatedAt = NOW() WHERE Id = ?',
+                    `UPDATE ${process.env.DB_NAME}.roles SET Name = ?, Scope = ?, Active = ?, UpdatedAt = NOW() WHERE Id = ?`,
                     [name, scope || '', active || 'Yes', id]
                 );
                 
@@ -58,7 +57,7 @@ async function rolesHandler(req, res) {
             } else {
                 // Create new role
                 const [result] = await pool.execute(
-                    'INSERT INTO iodd.roles (Name, Scope, Active, CreatedAt, UpdatedAt) VALUES (?, ?, ?, NOW(), NOW())',
+                    `INSERT INTO ${process.env.DB_NAME}.roles (Name, Scope, Active, CreatedAt, UpdatedAt) VALUES (?, ?, ?, NOW(), NOW())`,
                     [name, scope || '', active || 'Yes']
                 );
                 
@@ -82,7 +81,7 @@ async function rolesHandler(req, res) {
             }
             
             const [result] = await pool.execute(
-                'DELETE FROM iodd.roles WHERE Id = ?',
+                `DELETE FROM ${process.env.DB_NAME}.roles WHERE Id = ?`,
                 [roleId]
             );
             

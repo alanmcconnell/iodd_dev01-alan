@@ -5,12 +5,36 @@ class MemberProfileProject {
         this.projects = [];
         this.selectedProject = null;
         this.isEditing = false;
+        this.currentUser = null;
         this.init();
     }
 
-    init() {
+    async init() {
+        await this.checkAuthentication();
         this.setupEventListeners();
         this.loadProjects();
+    }
+
+    async checkAuthentication() {
+        // Use global member variables if available
+        const memberId = window.gMemberId || window.gMemberNo || window.parent?.gMemberId || window.parent?.gMemberNo;
+        const memberRole = window.gRole || window.parent?.gRole || 'Admin';
+        
+        if (memberId) {
+            this.currentUser = { 
+                MemberId: memberId, 
+                Role: memberRole 
+            };
+        } else {
+            // Default admin user for testing
+            this.currentUser = { Role: 'Admin' };
+        }
+        
+        // Enable buttons based on role
+        const canModify = this.currentUser.Role === 'Admin' || this.currentUser.Role === 'Editor';
+        document.getElementById('addBtn').disabled = !canModify;
+        document.getElementById('deleteBtn').disabled = true; // Will be enabled when project selected
+        document.getElementById('submitBtn').disabled = true; // Will be enabled when editing
     }
 
     setupEventListeners() {
@@ -35,6 +59,15 @@ class MemberProfileProject {
         form.addEventListener('input', () => {
             this.autoSaveToLocal();
         });
+        
+        // Add specific listener for dropdown changes
+        document.getElementById('projectStatus').addEventListener('change', () => {
+            if (!this.isEditing) {
+                this.isEditing = true;
+                this.updateButtons();
+            }
+            this.autoSaveToLocal();
+        });
 
         this.loadFromLocal();
     }
@@ -51,11 +84,12 @@ class MemberProfileProject {
         try {
             this.showMessage('Loading projects...', 'loading');
 
-            const response = await fetch('http://localhost:54032/api2/webpage_project_info_view', {
+            const response = await fetch('http://localhost:3004/api/webpage_project_info_view', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
-                }
+                },
+                credentials: 'include'
             });
 
             if (!response.ok) {
@@ -121,17 +155,17 @@ class MemberProfileProject {
         await this.loadProjectDetails(project.ProjectID);
         
         this.updateButtons();
-        document.getElementById('formTitle').textContent = 'Edit Project';
     }
 
     async loadProjectDetails(projectId) {
         try {
             console.log('Loading project details for ID:', projectId);
-            const response = await fetch(`http://localhost:54032/api2/project?pid=${projectId}`, {
+            const response = await fetch(`http://localhost:3004/api/project?pid=${projectId}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
-                }
+                },
+                credentials: 'include'
             });
 
             if (!response.ok) {
@@ -159,6 +193,7 @@ class MemberProfileProject {
         document.getElementById('description').value = project.Description || '';
         document.getElementById('client').value = project.Client || '';
         document.getElementById('projectType').value = project.ProjectType || '';
+        document.getElementById('projectStatus').value = project.Status || 'Active';
         document.getElementById('industry').value = project.Industry || '';
         document.getElementById('location').value = project.Location || '';
         document.getElementById('projectWeb').value = project.ProjectWeb || '';
@@ -172,8 +207,8 @@ class MemberProfileProject {
     clearForm() {
         document.getElementById('projectFormElement').reset();
         this.selectedProject = null;
+        this.isEditing = false;
         this.updateButtons();
-        document.getElementById('formTitle').textContent = 'Add New Project';
         
         // Remove selection from grid
         document.querySelectorAll('.project-item').forEach(item => {
@@ -182,26 +217,48 @@ class MemberProfileProject {
     }
 
     addProject() {
-        this.clearForm();
+        if (!this.currentUser || (this.currentUser.Role !== 'Admin' && this.currentUser.Role !== 'Editor')) {
+            this.showMessage('Admin or Editor role required', 'error');
+            return;
+        }
+        
+        // Clear form and reset state
+        document.getElementById('projectFormElement').reset();
+        this.selectedProject = null;
+        
+        // Remove selection from grid
+        document.querySelectorAll('.project-item').forEach(item => {
+            item.classList.remove('selected');
+        });
+        
+        // Enable editing mode for new project
         this.isEditing = true;
         this.updateButtons();
     }
 
     async deleteProject() {
+        if (!this.currentUser || (this.currentUser.Role !== 'Admin' && this.currentUser.Role !== 'Editor')) {
+            this.showMessage('Admin or Editor role required', 'error');
+            return;
+        }
+        
         if (!this.selectedProject) {
             this.showMessage('Please select a project to delete', 'error');
             return;
         }
 
-        if (!confirm(`Are you sure you want to delete "${this.selectedProject.ProjectName}"?`)) {
+        const result = await acm_SecurePopUp(`Do you want to delete this project: "${this.selectedProject.ProjectName}"?`, "Yes:Yes", "No:No");
+        
+        if (result !== 'Yes') {
             return;
         }
 
         try {
             this.showMessage('Deleting project...', 'loading');
 
-            const response = await fetch(`http://localhost:54032/api2/projects/${this.selectedProject.ProjectID}`, {
-                method: 'DELETE'
+            const response = await fetch(`http://localhost:3004/api/projects/${this.selectedProject.ProjectID}`, {
+                method: 'DELETE',
+                credentials: 'include'
             });
 
             if (!response.ok) {
@@ -220,6 +277,11 @@ class MemberProfileProject {
     }
 
     async saveProject() {
+        if (!this.currentUser || (this.currentUser.Role !== 'Admin' && this.currentUser.Role !== 'Editor')) {
+            this.showMessage('Admin or Editor role required', 'error');
+            return;
+        }
+        
         try {
             const formData = new URLSearchParams();
             
@@ -231,6 +293,7 @@ class MemberProfileProject {
             formData.append('description', document.getElementById('description').value);
             formData.append('client', document.getElementById('client').value);
             formData.append('projecttype', document.getElementById('projectType').value);
+            formData.append('status', document.getElementById('projectStatus').value);
             formData.append('industry', document.getElementById('industry').value);
             formData.append('location', document.getElementById('location').value);
             formData.append('projecturl', document.getElementById('projectWeb').value);
@@ -244,13 +307,14 @@ class MemberProfileProject {
 
             this.showMessage('Saving project...', 'loading');
 
-            const url = 'http://localhost:54032/api2/projects';
+            const url = 'http://localhost:3004/api/projects';
 
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
+                credentials: 'include',
                 body: formData
             });
 
@@ -310,9 +374,10 @@ class MemberProfileProject {
     updateButtons() {
         const deleteBtn = document.getElementById('deleteBtn');
         const submitBtn = document.getElementById('submitBtn');
+        const canModify = this.currentUser && (this.currentUser.Role === 'Admin' || this.currentUser.Role === 'Editor');
         
-        deleteBtn.disabled = !this.selectedProject;
-        submitBtn.disabled = !this.isEditing && !this.selectedProject;
+        deleteBtn.disabled = !this.selectedProject || !canModify;
+        submitBtn.disabled = !this.isEditing || !canModify;
     }
 
     autoSaveToLocal() {
@@ -324,6 +389,7 @@ class MemberProfileProject {
             description: document.getElementById('description').value,
             client: document.getElementById('client').value,
             projectType: document.getElementById('projectType').value,
+            projectStatus: document.getElementById('projectStatus').value,
             industry: document.getElementById('industry').value,
             location: document.getElementById('location').value,
             projectWeb: document.getElementById('projectWeb').value,
@@ -345,6 +411,7 @@ class MemberProfileProject {
                     document.getElementById('description').value = editData.description || '';
                     document.getElementById('client').value = editData.client || '';
                     document.getElementById('projectType').value = editData.projectType || '';
+                    document.getElementById('projectStatus').value = editData.projectStatus || 'Active';
                     document.getElementById('industry').value = editData.industry || '';
                     document.getElementById('location').value = editData.location || '';
                     document.getElementById('projectWeb').value = editData.projectWeb || '';

@@ -115,6 +115,7 @@
     import   cookieParser from 'cookie-parser';
 
     import { getEnv_sync, __dirname                           } from './assets/mjs/formr_utility-fns.mjs'   // .(50706.03.1 RAM Gotta doit here).(30410.02.1).(30410.03.1 Add setAPI_URL).(30412.02.10).(30416.02.3).(30416.03.3)
+    import   path from 'path';
 
     import { chkArgs, sndHTML, getData, sndRecs, sndFile      } from './assets/mjs/formr_server-fns.mjs';   // .(50702.02.1).(30403.04.3 RAM Add sndFile)
     import { init, start, setRoute, sayMsg, sndErr            } from './assets/mjs/formr_server-fns.mjs';   // .(50702.02.2).(30327.01.1 RAM)
@@ -124,11 +125,16 @@
 //
 //  ------  ---- ----- =  ------|  -------------------------------- ------------------- ------------------+
 
-       var  aEnv_Dir   =  __appDir; // `${__dirname}/../..`                                                 // .(50706.03.2).(30322.03.1 Beg RAM Set different var).(30416.03.5)
-//          console.log( `aEnv_Dir: '${aEnv_Dir }'`)
+       var  aPlatform  =  process.platform; // 'win32', 'darwin', 'linux', etc.
+       var  isWindows  =  aPlatform === 'win32';
+       var  isMac      =  aPlatform === 'darwin';
+       var  aEnv_File  =  path.resolve(__dirname, '../../../.env'); // Absolute path to .env file
+            console.log( `Platform: '${aPlatform}' (Windows: ${isWindows}, Mac: ${isMac})`)
+            console.log( `aEnv_File: '${aEnv_File }'`)
+            console.log( `__dirname: '${__dirname}'`)
 
 //          process.env=  await getEnv( `${aEnv_Dir}/.env` )
-            process.env=  getEnv_sync(  `${aEnv_Dir}/.env` ); // var pEnv = process.env                     // .(50706.03.3).(30222.01.2 RAM Get it myself).(30322.03.1 End).(30412.01.9 RAM no await)
+            process.env=  getEnv_sync(  aEnv_File ); // var pEnv = process.env                         // .(50706.03.3).(30222.01.2 RAM Get it myself).(30322.03.1 End).(30412.01.9 RAM no await)
 
 //          console.log( `Hello: process.argv[1]: '${process.argv[1]}'` ); //process.exit()
 //      if (process.argv[1].replace( /.*[\\/]/, '' ).match( /IODD.*\.mjs/ )) {
@@ -169,7 +175,7 @@
        var  aAPI_URL      =  process.env[`${aHostLocation}_API_URL`]                                        // .(50703.01.3).(30412.02.8 RAM Or aAPI_URL)
 
 //          console.log( `aAPI_URL: '${aAPI_URL}'`)
-            aAPI_URL      =  aAPI_URL.replace( /{PORT}/, nPort )
+            aAPI_URL      =  aAPI_URL ? aAPI_URL.replace( /{PORT}/, nPort ) : `/api2/${nPort}`
             aRemote_Host  = aRemote_Host.replace( /{PORT}/, nPort )                     // .(50707.02.x RAM Try this)
 
      // Extract just the path portion for Express routes
@@ -178,6 +184,9 @@
      global.aAPI_Host    =  aAPI_Path                                                   // .(50918.05.2 CAI Use API_Path as /api2)
 //     var  aAPI_Host     = `${aRemote_Host}${aAPI_URL}`                                //#.(50707.02.5 RAM Wrong) 
      global.aRemote_Host =  aRemote_Host                                                // .(50707.02.1 RAM Needed in formr_server-fns.start)
+     global.aPlatform    =  aPlatform                                                   // Make platform info globally available
+     global.isWindows    =  isWindows
+     global.isMac        =  isMac
 
             console.log( "")
             console.log( `aRemote_Host: '${aRemote_Host}'`)
@@ -185,6 +194,7 @@
             console.log( `aAPI_Host:     Now aAPI_Path: '${aAPI_Path}' (path only for Express routes)`) // .(50918.05.4 CAI Use aAPI_Path, not aAPI_Host)
             console.log( `aAPI_URL:     '${aAPI_URL}' (full URL)`)                      // .(50918.05.5 CAI Use aAPI_URL)
             console.log( `nPort:        '${nPort}'`);
+            console.log( `Platform:     '${aPlatform}' (Windows: ${isWindows}, Mac: ${isMac})`);
   
 (async function() {
        var  pIODD      =  new IODD                                                      // .(30406.02.1 Beg)
@@ -206,7 +216,7 @@
        
        // Configure CORS
        pApp.use(cors({
-           origin: ['http://127.0.0.1:5500', 'http://127.0.0.1:5501', 'http://localhost:5500', 'http://localhost:5501'],
+           origin: ['http://127.0.0.1:5500', 'http://127.0.0.1:5501', 'http://127.0.0.1:5505', 'http://localhost:5500', 'http://localhost:5501', 'http://localhost:5505'],
            credentials: true
        }));
        
@@ -215,7 +225,13 @@
        pApp.use(express.json());
        pApp.use(express.urlencoded({ extended: true }));
 
-       var  pDB_Config= { }                                                             // .(30412.02.13 RAM Override it here??)
+       var  pDB_Config= {                                                               // .(30412.02.13 RAM Override it here??)
+            host:     process.env.DB_HOST,
+            user:     process.env.DB_USER, 
+            password: process.env.DB_PASSWORD,
+            database: process.env.DB_NAME,
+            port:     process.env.DB_PORT
+        }
 
 //  ------  ---- ----- =  ------|  -------------------------------- -------------------
 
@@ -234,11 +250,13 @@ this.setRoutes = async function( bQuiet, aAPI_Host ) {                          
             this.Meetings_getRoute( )
 
             this.Member_postRoute( )                // .(30510.03.2)
+            this.Member_deleteRoute( )              // Member delete endpoint
             this.MemberBio_postRoute( )             // Bio update endpoint
             this.MemberSkills_postRoute( )          // Skills update endpoint
             this.Members_getRoute( )
             this.MembersBios_getRoute( )
             this.WebpageMembersBio_getRoute( )
+            this.WebpageMembersInfo_getRoute( )
             this.WebpageProjectInfo_getRoute( )
             this.WebpageProjectMembers_getRoute( )
             this.MembersProjects_getRoute( )
@@ -251,6 +269,7 @@ this.setRoutes = async function( bQuiet, aAPI_Host ) {                          
             this.ProjectsList_getRoute( )           // .(30511.03.2)
             this.ProjectCollaborators_getRoute( )
             this.ProjectCollaborators_postRoute( )  // .(30510.05.2)
+            this.MemberProject_updateRoute( )       // Member project update endpoint
             this.ProjectBanner_getRoute()           // .(30521.01.2 RJS Robin added)
 
 //          this.ProjectCollaboratorsLetters_getRoute( '/letters' )
@@ -985,6 +1004,32 @@ this.Member_postRoute = function( ) {                                           
          }; // eof Member_postRoute                                                                         // .(30510.03.4 End)
 //--------  ------------------  =  --------------------------------- ------------------
 
+this.Member_deleteRoute = function( ) {
+
+       var  pValidArgs = { id: /[0-9]+/ }
+
+            setRoute( pApp, 'delete', '/member', Member_deleteRoute_Handler, pValidArgs )
+
+     async  function  Member_deleteRoute_Handler( aMethod, pReq, pRes, aRoute ) {
+
+                               logIP(   pReq, pDB, `DELETE Route, '/member'` )
+                               sayMsg(  pReq, aMethod, aRoute )
+
+       var  pArgs      =       chkArgs( pReq, pRes, pValidArgs ); if (!pArgs) { return }
+       var  aSQL       = `DELETE FROM members WHERE Id = ${pArgs.id}`
+       var  mRecs      = await putData( pDB, aSQL, aRoute );
+
+        if (mRecs[0] == 'error') {
+                               sndErr(  pRes, mRecs[1] ); return
+        }
+
+                               sndJSON( pRes, JSON.stringify( { success: true, deleted: mRecs[2].affectedRows } ), aRoute )
+                               sayMsg( 'Done', "Member_deleteRoute_Handler" )
+
+         }; // eof Member_deleteRoute_Handler
+         }; // eof Member_deleteRoute
+//--------  ------------------  =  --------------------------------- ------------------
+
 this.MemberBio_postRoute = function( ) {
 
        var  pValidArgs = { 
@@ -1069,6 +1114,14 @@ this.WebpageMembersBio_getRoute = function( ) {
 
          }; // eof WebpageMembersBio_getRoute
 
+this.WebpageMembersInfo_getRoute = function( ) {
+
+        var aSQL = `SELECT * FROM webpage_members_info_view`
+
+            setRoute( pApp, 'get', '/webpage_members_info_view', JSON_getRoute_Handler, aSQL )
+
+         }; // eof WebpageMembersInfo_getRoute
+
 this.WebpageProjectInfo_getRoute = function( ) {
 
         var aSQL = `SELECT * FROM webpage_project_info_view`
@@ -1112,7 +1165,7 @@ this.Industry_getRoute = function() {
 this.Projects_getRoute = function( ) {                                                    // GET Route, '/projects
 
         // var aSQL = `SELECT * FROM projects`
-        var aSQL = 'SELECT DISTINCT ID FROM iodd.projects'
+        var aSQL = `SELECT DISTINCT ID FROM ${process.env.DB_NAME}.projects`
             setRoute( pApp, 'get', '/projects',         JSON_getRoute_Handler,  aSQL )
 
          }; // eof Projects_getRoute
@@ -1143,6 +1196,7 @@ this.Project_postRoute = function( ) {                                          
                          ,  description       : [ 'Description',  /.*/                                     ]
                          ,  client            : [ 'Client',       /.*/                                     ]
                          ,  projecttype       : [ 'ProjectType',  /.*/                                     ]
+                         ,  status            : [ 'Status',       /.*/                                     ]
                          ,  industry          : [ 'Industry',     /.*/                                     ]
                          ,  location          : [ 'Location',     /.*/                                     ]
                          ,  duration          : [ 'Duration',     /.*/                                     ]
@@ -1185,6 +1239,7 @@ this.Project_postRoute = function( ) {                                          
                             ,  Description = '${ (pProject.Description || '').replace(/'/g, "''") }'
                             ,  Client      = '${ pProject.Client || '' }'
                             ,  ProjectType = '${ pProject.ProjectType || '' }'
+                            ,  Status      = '${ pProject.Status || 'Active' }'
                             ,  Industry    = '${ pProject.Industry || '' }'
                             ,  Location    = '${ pProject.Location || '' }'
                             ,  ProjectWeb  = '${ pProject.ProjectWeb || '' }'
@@ -1194,12 +1249,13 @@ this.Project_postRoute = function( ) {                                          
        } else {
            // Insert new project
            var aSQL = `INSERT INTO projects
-                          (Name, Description, Client, ProjectType, Industry, Location, ProjectWeb, ClientWeb)
+                          (Name, Description, Client, ProjectType, Status, Industry, Location, ProjectWeb, ClientWeb)
                        VALUES
                           ('${ pProject.Name || '' }'
                           ,'${ (pProject.Description || '').replace(/'/g, "''") }'
                           ,'${ pProject.Client || '' }'
                           ,'${ pProject.ProjectType || '' }'
+                          ,'${ pProject.Status || 'Active' }'
                           ,'${ pProject.Industry || '' }'
                           ,'${ pProject.Location || '' }'
                           ,'${ pProject.ProjectWeb || '' }'
@@ -1251,7 +1307,7 @@ this.ProjectsList_getRoute = function( ) {                                      
                             }
 
   function  fmtSQL (pArgs) {
-       var  aSQL = `SELECT * FROM iodd.form_projects_dropdown
+       var  aSQL = `SELECT * FROM ${process.env.DB_NAME}.form_projects_dropdown
                      WHERE  Owner like  '${ pArgs.owner || ''}%' AND MemberId = ${ pArgs.mid || -1 }
                    `
 //     var  aSQL = `SELECT * FROM iodd.form_projects_dropdown WHERE  ProjectId = ${ pArgs.id || -1 }`
@@ -1274,7 +1330,7 @@ this.ProjectBanner_getRoute = function( ) {                                     
        var  pValidArgs = { pid:/[0-9]+/ }
 
   function  fmtSQL (pArgs) {
-            return `SELECT * FROM iodd.form_projects_dropdown WHERE ProjectId = ${ pArgs.pid || -1 }`
+            return `SELECT * FROM ${process.env.DB_NAME}.form_projects_dropdown WHERE ProjectId = ${ pArgs.pid || -1 }`
             }
 //          setRoute( pApp, 'get', '/project_banner',    JSON_getRoute_Handler, pValidArgs, ( pArgs ) => {return fmtSQL(pArgs)})
             setRoute( pApp, 'get',  aRoute,              JSON_getRoute_Handler, pValidArgs, fmtSQL )
@@ -1338,7 +1394,7 @@ ${ nId ?
             }
         if (aAction == "insert") {
        var  aSQL =  `
-                    INSERT  INTO members_projects ( MemberId, ProjectId ) VALUES ( ${pArgs.mid}, ${pArgs.pid} )
+                    INSERT  INTO members_projects ( MemberNo, ProjectID ) VALUES ( ${pArgs.mid}, ${pArgs.pid} )
             `
             }                                                                           // .(30524.01.8 End)
     return  aSQL
@@ -1361,6 +1417,7 @@ this.ProjectCollaborators_postRoute = function( ) {                             
 
        var  pValidArgs = {  pid         : [ 'Id',            /.[0-9]+/, "required", "must be a number"] // .(30515.04.1 RAM Was: id)
                          ,  mpid        : [ 'Id',            /.[0-9]+/                                ]
+                         ,  mid         : [ 'MemberNo',      /.[0-9]*/                                ]
                          ,  projectname : [ 'Name',          /.+/                                     ]
                          ,  projecturl  : [ 'ProjectWeb',    /.+/                                     ]
                          ,  clientname  : [ 'Client',        /.+/                                     ]
@@ -1408,12 +1465,22 @@ this.ProjectCollaborators_postRoute = function( ) {                             
 
 function  fmtSQL1( pForm ) {
 
-       //   pForm.Description = pForm.Description.replace( /'/g, "''" )                 // .(30515.08.2 RAM Double up single quotes, if any)
+       // Only update project fields if they are provided
+       if (!pForm.projectname && !pForm.projecturl) {
+           return 'SELECT 1'; // No-op query if no project data to update
+       }
+
+       var  updateFields = [];
+       if (pForm.projectname) {
+           updateFields.push(`Name = '${ pForm.projectname }'`);
+       }
+       if (pForm.projecturl) {
+           updateFields.push(`ProjectWeb = '${ pForm.projecturl }'`);
+       }
 
        var  aSQL = `UPDATE  projects
-                       SET  Name       = '${ pForm.projectname  }'
-                         ,  ProjectWeb = '${ pForm.projecturl   }'
-                     WHERE  Id         =  ${ pForm.pid          }
+                       SET  ${ updateFields.join(', ') }
+                     WHERE  Id = ${ pForm.pid }
               `
     return  aSQL
             }
@@ -1422,8 +1489,10 @@ function  fmtSQL1( pForm ) {
   function  fmtSQL2( pForm ) {
 
        var  aSQL = `UPDATE  members_projects
-                       SET  Dates      = '${ pForm.dates        }'
+                       SET  MemberNo   = ${ pForm.mid || 'MemberNo' }
+                         ,  Duration   = '${ pForm.duration      }'
                          ,  Role       = '${ pForm.role         }'
+                         ,  Dates      = '${ pForm.dates        }'
                      WHERE  Id         =  ${ pForm.mpid         }
                      `
     return  aSQL
@@ -1437,6 +1506,37 @@ function  fmtSQL1( pForm ) {
 
 //     ---  ------------------  =  ---------------------------------
          }; // eof Project_postRoute                                                    // .(30510.05.3 End)
+//--------  ------------------  =  --------------------------------- ------------------
+
+this.MemberProject_updateRoute = function( ) {
+
+       var  pValidArgs = { 
+            id: /[0-9]+/,
+            role: /.*/,
+            duration: /.*/
+        }
+
+            setRoute( pApp, 'post', '/member_project_update', MemberProject_updateRoute_Handler, pValidArgs )
+
+     async  function  MemberProject_updateRoute_Handler( aMethod, pReq, pRes, aRoute ) {
+
+                               logIP(   pReq, pDB, `POST Route, '/member_project_update'` )
+                               sayMsg(  pReq, aMethod, aRoute )
+
+       var  pArgs      =       chkArgs( pReq, pRes, pValidArgs ); if (!pArgs) { return }
+
+       var  aSQL       = `UPDATE members_projects SET Role = '${(pArgs.role || '').replace(/'/g, "''")}', Duration = '${(pArgs.duration || '').replace(/'/g, "''")}' WHERE Id = ${pArgs.id}`
+       var  mRecs      = await putData( pDB, aSQL, aRoute );
+
+        if (mRecs[0] == 'error') {
+                               sndErr(  pRes, mRecs[1] ); return
+        }
+
+                               sndJSON( pRes, JSON.stringify( { success: true, updated: mRecs[2].affectedRows } ), aRoute )
+                               sayMsg( 'Done', "MemberProject_updateRoute_Handler" )
+
+         }; // eof MemberProject_updateRoute_Handler
+         }; // eof MemberProject_updateRoute
 //--------  ------------------  =  --------------------------------- ------------------
 //=====================================================================================
 

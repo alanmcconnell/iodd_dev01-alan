@@ -1,7 +1,7 @@
 // About Page Client
 class AboutClient {
     constructor() {
-        this.baseUrl = 'http://localhost:54032/api2';
+        this.baseUrl = 'http://localhost:3004/api';
         this.aboutInfo = {
             mission: "The Institute of Database Developers (IODD) is dedicated to advancing the field of database development through professional collaboration, knowledge sharing, and innovative solutions. We bring together experts in database design, implementation, and optimization to tackle complex data challenges across industries.",
             vision: "Our vision is to be the leading community of database professionals, setting standards for excellence in database development and empowering organizations to harness the full potential of their data assets.",

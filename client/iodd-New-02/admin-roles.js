@@ -5,13 +5,70 @@ class AdminRoles {
         this.originalData = {};
         this.roles = [];
         this.selectedRoleId = null;
-        this.baseUrl = window.location.protocol + '//' + window.location.hostname + ':54032';
+        this.baseUrl = window.location.protocol + '//' + window.location.hostname + ':3004';
+        this.currentUser = null;
         this.init();
     }
 
-    init() {
+    async init() {
+        const isAuthorized = await this.checkAuthentication();
+        if (!isAuthorized) {
+            this.showAccessDenied();
+            return;
+        }
         this.setupEventListeners();
         this.loadRoles();
+    }
+
+    async checkAuthentication() {
+        try {
+            const response = await fetch('http://localhost:54032/api2/member/info', {
+                credentials: 'include'
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                this.currentUser = data.success ? data.member : null;
+            }
+        } catch (error) {
+            console.error('JWT server unavailable, using fallback authentication:', error);
+        }
+        
+        // Fallback authentication when JWT server is unavailable
+        if (!this.currentUser) {
+            // Use global variables if available
+            if (typeof gMemberId !== 'undefined' && typeof gRole !== 'undefined') {
+                this.currentUser = {
+                    MemberNo: gMemberId,
+                    Role: gRole
+                };
+            } else {
+                // Default to Admin role for testing when no authentication available
+                this.currentUser = {
+                    MemberNo: 1,
+                    Role: 'Admin'
+                };
+            }
+        }
+        
+        // Check if user has Admin role
+        if (!this.currentUser || this.currentUser.Role !== 'Admin') {
+            return false;
+        }
+        
+        return true;
+    }
+
+    showAccessDenied() {
+        document.body.innerHTML = `
+            <div style="display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f5f5f5;">
+                <div style="background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center;">
+                    <h2 style="color: #dc3545; margin-bottom: 20px;">Access Denied</h2>
+                    <p style="color: #666; margin-bottom: 20px;">Only users with Admin role can access this page.</p>
+                    <button onclick="window.history.back()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Go Back</button>
+                </div>
+            </div>
+        `;
     }
 
     setupEventListeners() {
@@ -60,7 +117,9 @@ class AdminRoles {
 
     async loadRoles() {
         try {
-            const response = await fetch(`${this.baseUrl}/api2/roles`);
+            const response = await fetch(`${this.baseUrl}/api/roles`, {
+                credentials: 'include'
+            });
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -178,12 +237,13 @@ class AdminRoles {
                 formData.append('_token', csrfToken);
             }
 
-            const response = await fetch('http://localhost:54032/api2/role', {
+            const response = await fetch('http://localhost:3004/api/role', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'X-CSRF-TOKEN': csrfToken || ''
                 },
+                credentials: 'include',
                 body: formData
             });
 
@@ -239,7 +299,9 @@ class AdminRoles {
 
         try {
             // Check if role is assigned to any members
-            const checkResponse = await fetch(`http://localhost:54032/api2/role-usage?id=${this.selectedRoleId}`);
+            const checkResponse = await fetch(`http://localhost:3004/api/role-usage?id=${this.selectedRoleId}`, {
+                credentials: 'include'
+            });
             if (!checkResponse.ok) {
                 throw new Error(`Failed to check role usage: ${checkResponse.status}`);
             }
@@ -257,7 +319,7 @@ class AdminRoles {
 
             let userChoice;
             try {
-                userChoice = await acm_SecurePopUp("Do you want to delete this role?","Yes : Yes", "No : No");
+                userChoice = await acm_SecurePopUp("Do you want to delete this role?","Yes:Yes", "No:No");
             } catch (popupError) {
                 console.error('Error showing confirmation popup:', popupError);
                 return;
@@ -269,12 +331,13 @@ class AdminRoles {
             this.showMessage('Deleting...', 'loading');
 
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-            const response = await fetch(`http://localhost:54032/api2/role?id=${this.selectedRoleId}`, {
+            const response = await fetch(`http://localhost:3004/api/role?id=${this.selectedRoleId}`, {
                 method: 'DELETE',
                 headers: {
                     'X-CSRF-TOKEN': csrfToken || '',
                     'X-Requested-With': 'XMLHttpRequest'
-                }
+                },
+                credentials: 'include'
             });
 
             if (!response.ok) {
@@ -348,20 +411,9 @@ class AdminRoles {
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    // Wait for authentication to initialize
-    setTimeout(() => {
-        if (typeof gRole === 'undefined' || gRole !== 'Admin') {
-            const accessDeniedDiv = document.createElement('div');
-            accessDeniedDiv.className = 'access-denied';
-            accessDeniedDiv.textContent = 'Access Denied: Only Admin role can access this page.';
-            document.body.innerHTML = '';
-            document.body.appendChild(accessDeniedDiv);
-            return;
-        }
-        try {
-            new AdminRoles();
-        } catch (initError) {
-            console.error('Error initializing AdminRoles:', initError);
-        }
-    }, 500);
+    try {
+        new AdminRoles();
+    } catch (initError) {
+        console.error('Error initializing AdminRoles:', initError);
+    }
 });

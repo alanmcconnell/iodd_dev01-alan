@@ -26,7 +26,7 @@ class MemberProfileClient {
     async loadMemberByEmail(email) {
         try {
             console.log('Fetching member data for email:', email);
-            const response = await fetch(`http://localhost:54032/api2/members?email=${encodeURIComponent(email)}`);
+            const response = await fetch(`http://localhost:3004/api/members?email=${encodeURIComponent(email)}`);
             const data = await response.json();
             
             if (response.ok && data.members && data.members.length > 0) {
@@ -337,7 +337,7 @@ class MemberProfileClient {
         }
         
         try {
-            const response = await fetch(`http://localhost:54032/api2/members?id=${window.gMemberId}`);
+            const response = await fetch(`http://localhost:3004/api/members?id=${window.gMemberId}`);
             const data = await response.json();
             
             if (response.ok && data.members && data.members.length > 0) {

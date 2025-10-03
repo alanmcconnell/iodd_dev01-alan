@@ -50,7 +50,7 @@ class MemberProfileBio {
 
     async loadMembersList() {
         try {
-            const response = await fetch('http://localhost:54032/api2/list/members');
+            const response = await fetch('http://localhost:3004/api/list/members');
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -126,7 +126,7 @@ class MemberProfileBio {
         try {
             this.showMessage('Loading member data...', 'loading');
 
-            const response = await fetch(`http://localhost:54032/api2/members?id=${memberId}`, {
+            const response = await fetch(`http://localhost:3004/api/members?id=${memberId}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
@@ -214,7 +214,7 @@ class MemberProfileBio {
 
             console.log('Params contents:', Array.from(params.entries()));
 
-            const response = await fetch('http://localhost:54032/api2/member_bio', {
+            const response = await fetch('http://localhost:3004/api/member_bio', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'

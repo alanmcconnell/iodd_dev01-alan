@@ -1,8 +1,8 @@
-const express = require('express');
-const mysql = require('mysql2/promise');
-const cors = require('cors');
-const fs = require('fs');
-const path = require('path');
+import express from 'express';
+import mysql from 'mysql2/promise';
+import cors from 'cors';
+import fs from 'fs';
+import path from 'path';
 
 // Load configuration
 const config = JSON.parse(fs.readFileSync('config.json', 'utf8'));

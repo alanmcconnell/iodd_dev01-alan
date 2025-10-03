@@ -235,9 +235,10 @@
 //function  sndRecs( pRes, mRecs, aSQL, aDatasetName, aOnRouteFnc ) {                                       //#.(30331.01.3).(30407.03.8)
   function  sndRecs( mRecs, aSQL, aDatasetName, pRes, aOnRouteFnc ) {                                       // .(30407.03.8)
        var  aRecords   = (aDatasetName ? aDatasetName.replace( /^\//, "" ) + " " : "" ) + 'records'         // .(30526.03.12 RAM Keep??)
+       var  aJSON;
 
         if (String(mRecs[0]).match(/error/ )) {
-            aJSON      = `{ "error": "${ mRecs[1].replace( /[ \n]+$/, '' ) }" }`                            // .(30526.03.13 RAM S.B double-quotes not tics: \')
+            aJSON      = JSON.stringify({ "error": mRecs[1].replace( /[ \n]+$/, '' ) })                     // Ensure proper JSON format
         } else {
         if (mRecs.length > 0 || pRes.bSndNoData) {
 //          aRecords   = (mRecs.length != 1) ? aRecords : aRecords.replace( /s$/, "" ).replace(  /ies$/, 'y' )                                      // .(30402.05.25).(30526.03.14 RAM Don't keep??)
@@ -249,7 +250,7 @@
 //               sayMsg( `Handler,     '${aOnRouteFnc ? aOnRouteFnc :'routeHandler'}', executed`); //#.(30331.01.4).(30526.01.09)
         } else {
 //                        sayErr( `${ saySQL( aSQL    ) }\n ** No ${aRecords} found` );                     //#.(30328.04.6).(30402.05.15 RAM Not the same as GetData).(30407.03.9 RAM Now done in getData)
-       var  aJSON      =  JSON.stringify( {  "warning":   ` ** No ${aRecords} found` } )                    // .(30402.05.16)
+       var  aJSON      =  JSON.stringify( { "data": [], "message": `No ${aRecords} found` } )              // Return empty array with message in proper JSON format
          }  }
 //      if (pRes) {       sndJSON( pRes, aJSON, aRecords ) }                                                //#.(30407.03.10 RAM getData may not pass pRes )
 //               sayMsg( `Handler,     '${aOnRouteFnc ? aOnRouteFnc :'routeHandler'}', executed`);          //#.(30331.01.4).(30526.01.10).(30528.05.1)
@@ -456,6 +457,14 @@
             pRes.setHeader( 'Content-Type', 'application/json' );
 
         if (typeof(aJSON) == 'object') { aJSON = JSON.stringify( aJSON ) }                                  // .(30424.09.x)
+        
+        // Ensure valid JSON format
+        try {
+            JSON.parse(aJSON); // Validate JSON
+        } catch (e) {
+            aJSON = JSON.stringify({ "error": "Invalid JSON response format" });
+        }
+        
             pRes.send(  aJSON )
             pRes.end();
         if (aJSON.match( /{ "error": /)) { return }
@@ -539,7 +548,9 @@
 */
        pApp.use( '*', function( pReq, pRes ) {
                           console.log( `DEBUG: Catch-all route hit for: ${pReq.method} ${pReq.url}` )      // DEBUG: Add logging
-                          sndErr(  pRes, `${aMsg}`,  [ pReq.url ] )                                        // Changed from baseUrl to url
+                          var errorResponse = { error: `${aMsg}: ${pReq.url}` };
+                          pRes.setHeader( 'Content-Type', 'application/json' );
+                          pRes.send( JSON.stringify(errorResponse) );
                           sayErr(        `${aMsg}: '${ pReq.url }'\n` )                                    // .(30402.05.8 RAM Add).(30414.02.1 RAM Changed from baseUrl to url)
             } )
                           sayMsg( `${aMsg}${ s || '' }, set` )
@@ -547,15 +558,13 @@
 //  ------  ---- ----- =  ------|  -------------------------------- ------------------- ------------------+
 
   function  sndErr( pRes, aMsg, mItems ) {
-//          pRes.setHeader( 'Content-Type', 'text/html' );                                                  // .(30424.09.x RAM ??? Should it be json?)
-//     var  aItems     =  mItems ? ( mItems.length > 0 ? `, '${ mItems.join(    ) }'` : "") : ""
        var  aItems     =  mItems ? ( mItems.length > 0 ? `, ${ mItems.join( ', ') }`  : "") : ""; aMsg = aMsg.replace( /[: ]$/, "" )  // .(30511.02.6 RAM ?? Trailing :)
-        if (pRes.req.headers['accept'] == 'application/json') {                                             // .(30424.09.x)
-                          sndJSON( pRes, { error: `${aMsg}: ${aItems.substring(2)}` } )                     // .(30424.09.x)
-       } else {                                                                                             // .(30424.09.x)
-                          pRes.send(     `<h3>${aMsg}: ${ aItems.substring(2).replace( /""/g, '"' ) }</h3>` )
-//                        sayErr( `${aMsg}\n` )                                                             //#.(30402.05.9 RAM Remove)
-            }                                                                                               // .(30424.09.x)
+       
+       // Always return JSON format for API responses
+       pRes.setHeader( 'Content-Type', 'application/json' );
+       var errorResponse = { error: `${aMsg}${aItems ? ': ' + aItems.substring(2) : ''}` };
+       pRes.send( JSON.stringify(errorResponse) );
+       pRes.end();
          }; // eof sndErr
 //  ------  ---- ----- =  ------|  -------------------------------- ------------------- ------------------+
 /*
@@ -743,11 +752,11 @@
 
 //          ---------  =  ----------------------------------------------------------
 
-       var  aEnv_Dir   =  __appDir; // `${__dirname}/../..`                                                 // .(30322.03.1 Beg RAM Set different var).(30416.03.5)
-//          console.log( `aEnv_Dir: '${aEnv_Dir }'`)
+       var  aEnv_File  =  `${__appDir.replace('/api', '')}/.env`; // Correct path to .env file             // .(30322.03.1 Beg RAM Set different var).(30416.03.5)
+            console.log( `formr_server-fns aEnv_File: '${aEnv_File }'`)
 
 //          process.env=  await getEnv( `${aEnv_Dir}/.env` )                                                // .(30222.01.2 RAM Get it myself).(30322.03.1 End).(30410.03.4 RAM await)
-            process.env=  getEnv_sync(  `${aEnv_Dir}/.env` ); var pEnv = process.env                        // .(30222.01.2 RAM Get it myself).(30322.03.1 End).(30412.01.9 RAM no await)
+            process.env=  getEnv_sync(  aEnv_File ); var pEnv = process.env                                 // .(30222.01.2 RAM Get it myself).(30322.03.1 End).(30412.01.9 RAM no await)
 
             bQuiet     =  setVar1( 'Quiet', bQuiet_, true )   // Override value in .env
             bQuiet     =  bQuiet ?  true :  false;            // console.log( `bQuiet:        ${bQuiet}`   );  process.exit()

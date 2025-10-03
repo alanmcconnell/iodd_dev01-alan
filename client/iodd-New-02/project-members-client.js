@@ -1,8 +1,7 @@
 // Simple Projects Display
 async function loadProjects() {
     try {
-
-        const response = await fetch('http://localhost:54032/api2/webpage_project_info_view');
+        const response = await fetch('http://localhost:3004/api/webpage_project_info_view');
         const data = await response.json();
         
 
@@ -68,7 +67,7 @@ async function loadProjects() {
             }
         }
         
-        if (Array.isArray(projects)) {
+        if (Array.isArray(projects) && projects.length > 0) {
             projects.forEach(project => {
                 const row = document.createElement('tr');
                 
@@ -127,7 +126,7 @@ async function loadProjects() {
                 tbody.appendChild(row);
             });
         } else {
-            tbody.innerHTML = '<tr><td colspan="5">No projects found</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="3">No projects available in database</td></tr>';
         }
     } catch (error) {
         console.error('Error loading projects:', error);
@@ -138,7 +137,7 @@ async function loadProjects() {
 // Load project members
 async function loadProjectMembers(projectId) {
     try {
-        const response = await fetch(`http://localhost:54032/api2/webpage_project_members_view?ProjectID=${projectId}`);
+        const response = await fetch(`http://localhost:3004/api/webpage_project_members_view?ProjectID=${projectId}`);
         const data = await response.json();
         
         let members = data;
@@ -182,7 +181,7 @@ async function loadProjectMembers(projectId) {
                 tbody.appendChild(row);
             });
         } else {
-            tbody.innerHTML = '<tr><td colspan="4">No members found for this project</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4">No members assigned to this project</td></tr>';
         }
         
     } catch (error) {

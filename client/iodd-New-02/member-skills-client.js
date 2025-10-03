@@ -1,7 +1,7 @@
 // Member Skills Client for webpage_members_skills_view
 class MemberSkillsClient {
     constructor() {
-        this.baseUrl = 'http://localhost:54032/api2';
+        this.baseUrl = 'http://localhost:3004/api';
     }
 
     async fetchData(endpoint) {

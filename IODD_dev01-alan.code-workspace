@@ -1,7 +1,8 @@
 {
     "folders": [
         {
-            "path": "."
+            "name": "iodd_dev01-alan",
+	    "path": "."
         }
     ],
     "settings": {

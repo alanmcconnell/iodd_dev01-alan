@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Services - IODD</title>
+    <link rel="stylesheet" href="footer-styles.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -113,28 +114,7 @@
             color: #764ba2;
         }
         
-        .footer {
-            background: #333;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-        }
-        
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-        }
-        
-        .footer-links a {
-            color: white;
-            text-decoration: none;
-        }
+
         
         /* Responsive styles */
         @media (max-width: 768px) {
@@ -196,13 +176,10 @@
     </main>
 
     <footer class="footer">
-        <div class="footer-links">
-            <a href="#">Support</a>
-            <a href="#">Licenses</a>
-            <a href="#">Guru Mail</a>
-        </div>
+        <div class="footer-links"></div>
     </footer>
 
     <script src="services.js"></script>
+    <script src="footer-content.js"></script>
 </body>
 </html>

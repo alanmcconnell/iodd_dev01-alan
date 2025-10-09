@@ -13,13 +13,13 @@
  DB_Host        = '92.112.184.206'
  DB_User        = 'nimdas'
  DB_Password    = 'FormR!1234'
- DB_Database    = 'iodd2'
+ DB_Database    = 'iodd'
  DB_Port        = '3036'
 
  DB_HOST        = '92.112.184.206'
  DB_USER        = 'nimdas'
  DB_PASSWORD    = 'FormR!1234'
- DB_NAME        = 'iodd2'
+ DB_NAME        = 'iodd'
  DB_PORT        = '3036'
 
 # Server Configuration

@@ -196,6 +196,32 @@ app.get('/api/schema/:table', async (req, res) => {
   }
 });
 
+// Contact form submission endpoint
+app.post('/api/contact', async (req, res) => {
+  try {
+    const { ContactName, ContactEmail, Question, DateReceived, Status } = req.body;
+    
+    const query = `INSERT INTO ContactMail 
+                   (ContactName, ContactEmail, Question, DateReceived, Status) 
+                   VALUES (?, ?, ?, ?, ?)`;
+    
+    const [result] = await pool.execute(query, [ContactName, ContactEmail, Question, DateReceived, Status]);
+    
+    res.json({
+      success: true,
+      id: result.insertId,
+      message: 'Contact submission saved successfully'
+    });
+  } catch (error) {
+    console.error('Database error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to save contact submission',
+      message: error.message
+    });
+  }
+});
+
 // Custom query endpoint (use with caution)
 app.post('/api/query', async (req, res) => {
   try {

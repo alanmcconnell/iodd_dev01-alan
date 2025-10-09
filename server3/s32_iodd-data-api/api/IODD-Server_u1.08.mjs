@@ -278,6 +278,7 @@ this.setRoutes = async function( bQuiet, aAPI_Host ) {                          
             this.Users_getRoute( )                  // .(30510.02.3)
             this.User_getRoute( )                   // .(30510.02.4 RAM Change to this.user_getRoute)
             this.UserByEmail_getRoute( )            // Search user by email
+            this.Contact_postRoute( )               // Contact form submission
 
          }; // eof setRoutes                                                            // .(30406.02.3 End)
 //--------  ------------------  =  --------------------------------- ------------------
@@ -861,6 +862,7 @@ this.Member_postRoute = function( ) {                                           
                          , 'company-url'     : [ 'WebSite',      /.+/,  ]                                    // .(30515.03.17 RAM Was website)
 //                       ,  skills           : [ 'Skills',       /.+/,  ]                                    // .(30515.03.18 RAM Not in form)
                          ,  bio              : [ 'Bio',          /.+/,  ]
+                         , 'emailContactQuestion' : [ 'EmailContactQuestion', /^(Yes|No)$/, 'No' ]
 //                       ,  created_at       : [ 'CreatedAt',    /.+/,  aNow ]                               // .(30515.03.19 RAM Set in DB)
                          ,  updated_at       : [ 'UpdatedAt',    /.+/, `=STR_TO_DATE( '${ aNow }', '%Y-%m-%d %H:%i:%s' )` ]   // .(30527.02.3 RAM Expression)
 //                       ,  last_updated     : [ 'LastUpdated',  /.+/,  aNow ]                               // .(30515.03.21 RAM Set in SQL)
@@ -1558,6 +1560,97 @@ this.UserByEmail_getRoute = function() {
             , { email: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/ }
                        );
          }; // eof UserByEmail_getRoute
+//--------  ------------------  =  --------------------------------- ------------------
+
+//= contact ===============================================================
+//-(Contact Form Submission)-----------------------------------------------
+
+this.Contact_postRoute = function( ) {
+
+       var  pValidArgs = {
+            ContactName: /.+/,
+            ContactEmail: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/,
+            Question: /.+/,
+            DateReceived: /.+/,
+            Status: /.+/,
+            IODDNotice: /.*/
+        }
+
+            setRoute( pApp, 'post', '/contact', Contact_postRoute_Handler, pValidArgs )
+
+     async  function  Contact_postRoute_Handler( aMethod, pReq, pRes, aRoute ) {
+
+                               logIP(   pReq, pDB, `POST Route, '/contact'` )
+                               sayMsg(  pReq, aMethod, aRoute )
+
+       var  pArgs      =       chkArgs( pReq, pRes, pValidArgs ); if (!pArgs) { return }
+       var  aSQL       = `INSERT INTO ContactMail 
+                          (ContactName, ContactEmail, Question, DateReceived, Status, IODDNotice) 
+                          VALUES ('${pArgs.ContactName}', '${pArgs.ContactEmail}', '${pArgs.Question.replace(/'/g, "''")}', '${pArgs.DateReceived}', '${pArgs.Status}', 'Pending')`
+       var  mRecs      = await putData( pDB, aSQL, aRoute );
+
+        if (mRecs[0] == 'error') {
+                               sndErr(  pRes, mRecs[1] ); return
+        }
+
+       var  recordId   = mRecs[2].insertId || mRecs[2].affectedId;
+       var  emailStatus = 'Failed';
+
+        // Send email notification after successful database save
+        try {
+            // Get email recipients from database
+            const recipientSQL = `SELECT Email FROM members WHERE Active = 'Y' AND EmailContactQuestion = 'Yes'`;
+            const recipients = await getData( pDB, recipientSQL, aRoute );
+            
+            if (recipients && recipients.length > 0) {
+                const nodemailer = await import('nodemailer');
+                
+                const transporter = nodemailer.default.createTransport({
+                    host: process.env.EMAIL_HOST,
+                    port: process.env.EMAIL_PORT,
+                    secure: false,
+                    auth: {
+                        user: process.env.EMAIL_USER,
+                        pass: process.env.EMAIL_PASS
+                    },
+                    tls: {
+                        rejectUnauthorized: false
+                    }
+                });
+                
+                const currentDate = new Date().toLocaleDateString();
+                const emailBody = `Contact Name: ${pArgs.ContactName}\nContact Email: ${pArgs.ContactEmail}\nDate Received: ${pArgs.DateReceived}\nQuestion:\n${pArgs.Question}`;
+                
+                // Send to all recipients
+                const emailPromises = recipients.map(recipient => 
+                    transporter.sendMail({
+                        from: process.env.EMAIL_USER,
+                        to: recipient.Email,
+                        subject: `IODD Contact Question - ${currentDate}`,
+                        text: emailBody
+                    })
+                );
+                
+                await Promise.all(emailPromises);
+                emailStatus = 'Sent';
+            } else {
+                emailStatus = 'No Recipients';
+            }
+            
+        } catch (emailError) {
+            console.error('Email sending failed:', emailError);
+        }
+
+        // Update IODDNotice field with email status
+        if (recordId) {
+            await putData( pDB, `UPDATE ContactMail SET IODDNotice = '${emailStatus}' WHERE Id = ${recordId}`, aRoute );
+        }
+
+                               sndJSON( pRes, JSON.stringify( { success: true, id: recordId, emailStatus: emailStatus } ), aRoute )
+                               sayMsg( 'Done', "Contact_postRoute_Handler" )
+
+         }; // eof Contact_postRoute_Handler
+         }; // eof Contact_postRoute
 //--------  ------------------  =  --------------------------------- ------------------
 //=====================================================================================
 

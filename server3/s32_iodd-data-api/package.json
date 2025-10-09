@@ -6,7 +6,8 @@
     "type": "module",
     "dependencies": {
         "cookie-parser": "^1.4.7",
-        "cors": "^2.8.5"
+        "cors": "^2.8.5",
+        "nodemailer": "^7.0.9"
     },
     "scripts": {
         "start": "nodemon server.mjs",

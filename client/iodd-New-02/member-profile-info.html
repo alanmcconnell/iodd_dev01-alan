@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Member Information</title>
+    <link rel="stylesheet" href="footer-styles.css">
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -203,10 +204,17 @@
                     <label for="country">Country</label>
                     <input type="text" id="country" name="country">
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="flex: 0.5;">
                     <label for="applicationRole">Application Role</label>
                     <select id="applicationRole" name="applicationRole">
                         <option value="">Select Role...</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex: 0.4;">
+                    <label for="emailContactQuestion">Receive Question Email</label>
+                    <select id="emailContactQuestion" name="emailContactQuestion">
+                        <option value="No">No</option>
+                        <option value="Yes">Yes</option>
                     </select>
                 </div>
             </div>

@@ -1,0 +1,32 @@
+.footer {
+    background: #333;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    margin-top: 50px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+.footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    white-space: nowrap;
+}
+
+.footer-links a {
+    color: white;
+    text-decoration: underline;
+}
+
+.footer-links a:hover {
+    text-decoration: underline;
+}
+
+body {
+    padding-bottom: 80px;
+}

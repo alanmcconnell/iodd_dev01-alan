@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IODD - Institute of Database Developers</title>
+    <link rel="stylesheet" href="footer-styles.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -299,37 +300,7 @@
             border-radius: 4px;
         }
         
-        .footer {
-            background: #333;
-            color: white;
-            padding: 10px;
-            text-align: center;
-            margin-top: 50px;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-        }
-        
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-        }
-        
-        .footer-links a {
-            color: white;
-            text-decoration: none;
-        }
-        
-        .footer-links a:hover {
-            text-decoration: underline;
-        }
-        
-        body {
-            padding-bottom: 80px;
-        }
+
     </style>
 </head>
 <body>
@@ -357,7 +328,7 @@
                 </div>
                 <a href="services.html">Services</a>
                 <a href="about.html">About</a>
-                <a href="#">Contact</a>
+                <a href="contact-email.html">Contact</a>
             </div>
             <div class="nav-buttons">
                 <button class="btn" onclick="window.location.href='http://localhost:3005/login_client.html?redirect_url=' + encodeURIComponent('http://localhost:5505/client/iodd-New-02/member-profile.html') + '&failure_url=' + encodeURIComponent('http://localhost:5505/client/iodd-New-02/index.html')">Login</button>
@@ -374,15 +345,12 @@
     </div>
 
     <footer class="footer">
-        <div class="footer-links">
-            <a href="#">Support</a>
-            <a href="#">Licenses</a>
-            <a href="#">Guru Mail</a>
-        </div>
+        <div class="footer-links"></div>
     </footer>
 
     <script src="../../lib/global-token-functions.js"></script>
     <script src="../../lib/acm_Prompts.js"></script>
+    <script src="footer-content.js"></script>
     <script>
         // Global variables
         window.gMemberId = null;

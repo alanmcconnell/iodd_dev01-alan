@@ -248,6 +248,7 @@ class MemberProfileInfo {
         document.getElementById('country').value = member.Country || '';
         document.getElementById('website').value = member.WebSite || '';
         document.getElementById('applicationRole').value = member.RoleId || '';
+        document.getElementById('emailContactQuestion').value = member.EmailContactQuestion || 'No';
         
         // Apply all role-based permissions and UI controls
         RolePermissions.applyFormPermissions(member);
@@ -320,7 +321,8 @@ class MemberProfileInfo {
                 'zip': 'zip',
                 'country': 'country',
                 'company-url': 'website',
-                'role-id': 'applicationRole'
+                'role-id': 'applicationRole',
+                'emailContactQuestion': 'emailContactQuestion'
             };
             
             Object.keys(fieldMap).forEach(key => {
@@ -401,7 +403,8 @@ class MemberProfileInfo {
                 'zip': 'zip',
                 'country': 'country',
                 'company-url': 'website',
-                'role-id': 'applicationRole'
+                'role-id': 'applicationRole',
+                'emailContactQuestion': 'emailContactQuestion'
             };
             
             Object.keys(fieldMap).forEach(key => {

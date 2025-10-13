@@ -155,7 +155,8 @@ class MemberProfileClient {
             'your-information': { title: 'Member Information', subtitle: 'Personal details and contact information' },
             'bio': { title: 'Biography', subtitle: 'Your professional background and story' },
             'skills': { title: 'Skills', subtitle: 'Technical abilities and expertise' },
-            'project-list': { title: 'Project Information', subtitle: 'Manage your project portfolio' }
+            'project-list': { title: 'Project Information', subtitle: 'Manage your project portfolio' },
+            'contact-emails': { title: 'IODD Contact email requests', subtitle: 'Manage and respond to contact inquiries' }
         };
         
         const titleInfo = titles[section] || { title: section, subtitle: 'Loading content...' };

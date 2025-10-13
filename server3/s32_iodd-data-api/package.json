@@ -1,7 +1,7 @@
 {
     "name": "s36-mysql-data-api",
-    "version": "0.01.010",
-    "author": "Robin Mattern",
+    "version": "2.02",
+    "author": "Alan McConnell",
     "license": "ISC",
     "type": "module",
     "dependencies": {
@@ -11,7 +11,7 @@
     },
     "scripts": {
         "start": "nodemon server.mjs",
-        "restart": "clear && open http://127.0.0.1:5501/client/iodd-New-02/index.html & npm start"
+        "restart": "clear && open http://127.0.0.1:5501/client3/c32_iodd-app/index.html & npm start"
     },
     "browserslist": {
         "production": [

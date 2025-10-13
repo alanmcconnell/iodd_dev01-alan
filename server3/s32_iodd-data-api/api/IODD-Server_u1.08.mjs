@@ -279,6 +279,7 @@ this.setRoutes = async function( bQuiet, aAPI_Host ) {                          
             this.User_getRoute( )                   // .(30510.02.4 RAM Change to this.user_getRoute)
             this.UserByEmail_getRoute( )            // Search user by email
             this.Contact_postRoute( )               // Contact form submission
+            this.ContactMail_getRoute( )            // Get ContactMail data
 
          }; // eof setRoutes                                                            // .(30406.02.3 End)
 //--------  ------------------  =  --------------------------------- ------------------
@@ -1651,6 +1652,15 @@ this.Contact_postRoute = function( ) {
 
          }; // eof Contact_postRoute_Handler
          }; // eof Contact_postRoute
+//--------  ------------------  =  --------------------------------- ------------------
+
+this.ContactMail_getRoute = function() {
+
+            setRoute( pApp, 'get', '/contactmail', JSON_getRoute_Handler
+            , ( pArgs ) => `SELECT Id, ContactName, ContactEmail, DateReceived, Question, MemberNo, Answer FROM ContactMail ORDER BY DateReceived DESC`
+            , { }
+                       );
+         }; // eof ContactMail_getRoute
 //--------  ------------------  =  --------------------------------- ------------------
 //=====================================================================================
 

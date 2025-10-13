@@ -305,9 +305,25 @@
 </head>
 <body>
     <div class="background-container" id="background"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const logo = document.getElementById('logo');
+            
+            // Fetch from server's package.json file
+            fetch('../../server3/s32_iodd-data-api/package.json')
+                .then(response => response.json())
+                .then(pkg => {
+                    const version = pkg.version.replace('.', ':');
+                    logo.textContent = `IODD (version: ${version})`;
+                })
+                .catch(() => {
+                    console.log('Could not fetch package.json from server');
+                });
+        });
+    </script>
     <header class="header">
         <nav class="nav">
-            <div class="logo">IODD</div>
+            <div class="logo" id="logo">IODD (version: 2:02)</div>
             <div class="nav-links">
                 <a href="#">Home</a>
                 <div class="dropdown">
@@ -331,7 +347,7 @@
                 <a href="contact-email.html">Contact</a>
             </div>
             <div class="nav-buttons">
-                <button class="btn" onclick="window.location.href='http://localhost:3005/login_client.html?redirect_url=' + encodeURIComponent('http://localhost:5505/client/iodd-New-02/member-profile.html') + '&failure_url=' + encodeURIComponent('http://localhost:5505/client/iodd-New-02/index.html')">Login</button>
+                <button class="btn" onclick="window.location.href='http://localhost:3005/login_client.html?redirect_url=' + encodeURIComponent('http://localhost:5505/client3/c32_iodd-app/member-profile.html') + '&failure_url=' + encodeURIComponent('http://localhost:5505/client3/c32_iodd-app/index.html')">Login</button>
                 <button class="btn" onclick="acm_SecurePopUp('The register option is not available.','OK:ok')">Register</button>
             </div>
         </nav>

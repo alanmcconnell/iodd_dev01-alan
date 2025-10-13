@@ -14,8 +14,8 @@
 .footer-links {
     display: flex;
     justify-content: center;
-    gap: 0;
-    white-space: nowrap;
+    gap: 15px;
+    flex-wrap: wrap;
 }
 
 .footer-links a {
@@ -29,4 +29,36 @@
 
 body {
     padding-bottom: 80px;
+}
+
+/* Responsive footer styles */
+@media (max-width: 768px) {
+    .footer {
+        padding: 8px 5px;
+        font-size: 14px;
+    }
+    
+    .footer-links {
+        gap: 10px;
+    }
+    
+    body {
+        padding-bottom: 70px;
+    }
+}
+
+@media (max-width: 480px) {
+    .footer {
+        padding: 6px 3px;
+        font-size: 12px;
+    }
+    
+    .footer-links {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    body {
+        padding-bottom: 60px;
+    }
 }

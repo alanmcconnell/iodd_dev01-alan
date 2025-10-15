@@ -1,5 +1,6 @@
 // API configuration matching other working pages
-const API_BASE_URL = 'http://localhost:3004/api';
+//    var API_BASE_URL       = 'http://localhost:3004/api';
+      var API_BASE_URL       = window.fvaRs.SERVER_API_URL;                             // .(51013.01.13)
 
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('contactForm');

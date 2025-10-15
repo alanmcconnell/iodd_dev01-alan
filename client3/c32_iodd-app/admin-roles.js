@@ -1,11 +1,13 @@
 // admin-roles.js
+//      var CLIENT_PATH    = window.fvaRs.CLIENT_PATH;                                  //#.(51013.01.5)
+        var SERVER_API_URL = window.fvaRs.SERVER_API_URL;                               // .(51013.01.5)
 
 class AdminRoles {
     constructor() {
         this.originalData = {};
         this.roles = [];
         this.selectedRoleId = null;
-        this.baseUrl = window.location.protocol + '//' + window.location.hostname + ':3004';
+// this.baseUrl = window.location.protocol + '//' + window.location.hostname + ':3004'; //#.(51013.01.5)
         this.currentUser = null;
         this.init();
     }
@@ -22,7 +24,8 @@ class AdminRoles {
 
     async checkAuthentication() {
         try {
-            const response = await fetch('http://localhost:54032/api2/member/info', {
+//          const response = await fetch(`${SERVER_API_URL}/member/info`, {             //#.(51013.01.5 RAM No Workie)
+            const response = await fetch( SERVER_API_URL + '/member/info', {            // .(51013.01.5 RAM Was http://localhost:54032/api2)
                 credentials: 'include'
             });
             
@@ -117,7 +120,7 @@ class AdminRoles {
 
     async loadRoles() {
         try {
-            const response = await fetch(`${this.baseUrl}/api/roles`, {
+            const response = await fetch( SERVER_API_URL + '/api/roles', {              // .(51013.01.5 RAM Was: `${this.baseUrl}/api/roles`)
                 credentials: 'include'
             });
             if (!response.ok) {

@@ -1,7 +1,10 @@
 // About Page Client
 class AboutClient {
+
     constructor() {
-        this.baseUrl = 'http://localhost:3004/api';
+//      this.baseUrl        = 'http://localhost:3004/api';                              //#.(51013.01.11)
+        this.baseUrl        = window.fvaRs.SERVER_API_URL;                              // .(51013.01.11)
+
         this.aboutInfo = {
             mission: "The Institute of Database Developers (IODD) is dedicated to advancing the field of database development through professional collaboration, knowledge sharing, and innovative solutions. We bring together experts in database design, implementation, and optimization to tackle complex data challenges across industries.",
             vision: "Our vision is to be the leading community of database professionals, setting standards for excellence in database development and empowering organizations to harness the full potential of their data assets.",
@@ -21,16 +24,16 @@ class AboutClient {
     async fetchStats() {
         try {
             // Get project count from dedicated function
-            const projectCount = await this.getProjectCount();
+            const projectCount  = await this.getProjectCount();
             
             // Get member count from dedicated function
-            const memberCount = await this.getMemberCount();
+            const memberCount   = await this.getMemberCount();
             
             // Get industry count from dedicated function
             const industryCount = await this.getIndustryCount();
             
             // Calculate years active
-            const yearsActive = new Date().getFullYear() - 2005;
+            const yearsActive   = new Date().getFullYear() - 2005;
             
             return {
                 projects: projectCount,
@@ -69,8 +72,8 @@ class AboutClient {
             console.error('Error fetching leadership:', error);
             // Return default leadership if API fails
             return [
-                { name: "Jane Smith", role: "Founder & President", bio: "Database architect with over 20 years of experience in enterprise solutions." },
-                { name: "Michael Chen", role: "Technical Director", bio: "Specializes in high-performance database systems and cloud architecture." },
+                { name: "Jane Smith",    role: "Founder & President", bio: "Database architect with over 20 years of experience in enterprise solutions." },
+                { name: "Michael Chen",  role: "Technical Director", bio: "Specializes in high-performance database systems and cloud architecture." },
                 { name: "Sarah Johnson", role: "Research Lead", bio: "PhD in Computer Science with focus on distributed database systems." },
                 { name: "Robert Taylor", role: "Education Director", bio: "Former professor of Database Management with extensive industry experience." }
             ];
@@ -264,6 +267,26 @@ async function displayAboutContent() {
         
         // Build the about content
         let content = `
+
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-number">${stats.years}</div>
+                    <div class="stat-label">Years of Excellence</div>
+                </div>
+                <div class="stat-card" id="member-stat-card">
+                    <div class="stat-number">${stats.members}</div>
+                    <div class="stat-label">Professional Members</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${stats.projects}</div>
+                    <div class="stat-label">Projects Completed</div>
+                </div>
+                <div class="stat-card" id="industry-stat-card">
+                    <div class="stat-number">${stats.industries}</div>
+                    <div class="stat-label">Industries Served</div>
+                </div>
+            </div> 
+
             <div class="about-section">
                 <h2>Our Mission</h2>
                 <p>${client.aboutInfo.mission}</p>
@@ -287,7 +310,7 @@ async function displayAboutContent() {
                 </ul>
             </div>
             
-            <div class="stats-container">
+<!--        <div class="stats-container">
                 <div class="stat-card">
                     <div class="stat-number">${stats.years}</div>
                     <div class="stat-label">Years of Excellence</div>
@@ -304,8 +327,7 @@ async function displayAboutContent() {
                     <div class="stat-number">${stats.industries}</div>
                     <div class="stat-label">Industries Served</div>
                 </div>
-            </div>
-            
+            </div> -->
 
         `;
         

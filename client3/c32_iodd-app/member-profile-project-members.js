@@ -1,5 +1,5 @@
 // Project Members Management
-const API_BASE_URL = 'http://localhost:3004/api';
+const API_BASE_URL =  window.fvaRs.SERVER_API_URL;                                      // .(51013.01.23) 
 
 let projects = [];
 let members = [];
@@ -27,7 +27,9 @@ document.addEventListener('DOMContentLoaded', async function() {
 // Check authentication and set user permissions
 async function checkAuthentication() {
     try {
-        const response = await fetch('http://localhost:54032/api2/member/info', {
+//      const response = await fetch( 'http://localhost:54032/api2/member/info', {       //#.(51013.01.23)             
+//      const response = await fetch(`${window.fvaRs.AUTH_API_URL}/member/info`, {       //#.(51013.01.23)             
+        const response = await fetch(`${window.fvaRs.SERVER_API_URL}/member/info`, {     // .(51013.01.23)             
             credentials: 'include'
         });
         

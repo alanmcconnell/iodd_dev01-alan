@@ -1,7 +1,7 @@
 // Member Skills Client for webpage_members_skills_view
 class MemberSkillsClient {
     constructor() {
-        this.baseUrl = 'http://localhost:3004/api';
+        this.baseUrl = window.fvaRs.SERVER_API_URL;                                     // .(51013.01.29)
     }
 
     async fetchData(endpoint) {

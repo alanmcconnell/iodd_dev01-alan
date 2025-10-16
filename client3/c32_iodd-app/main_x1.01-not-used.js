@@ -1,7 +1,9 @@
 // Database API Client
 class IODDClient {
     constructor() {
-        this.baseUrl = 'http://localhost:54032/api2';
+//      this.SERVER_API_URL =  window.fvaRs.SERVER_API_URL;                             //#.(51013.01.3)
+//      this.baseUrl        = 'http://localhost:54032/api2';                            //#.(51013.01.3)
+        this.baseUrl        =  window.fvaRs.SERVER_API_URL;                             // .(51013.01.3)
     }
 
     async fetchData(endpoint) {

@@ -84,7 +84,7 @@ class MemberProfileProject {
         try {
             this.showMessage('Loading projects...', 'loading');
 
-            const response = await fetch('http://localhost:3004/api/webpage_project_info_view', {
+            const response = await fetch(`${window.fvaRs.SERVER_API_URL}/webpage_project_info_view`, {      // .(51013.01.25)
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
@@ -160,7 +160,7 @@ class MemberProfileProject {
     async loadProjectDetails(projectId) {
         try {
             console.log('Loading project details for ID:', projectId);
-            const response = await fetch(`http://localhost:3004/api/project?pid=${projectId}`, {
+            const response = await fetch(`${window.fvaRs.SERVER_API_URL}/project?pid=${projectId}`, {       // .(51013.01.25)
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
@@ -256,7 +256,7 @@ class MemberProfileProject {
         try {
             this.showMessage('Deleting project...', 'loading');
 
-            const response = await fetch(`http://localhost:3004/api/projects/${this.selectedProject.ProjectID}`, {
+            const response = await fetch(`${window.fvaRs.SERVER_API_URL}/projects/${this.selectedProject.ProjectID}`, { // .(51013.01.25)
                 method: 'DELETE',
                 credentials: 'include'
             });
@@ -307,7 +307,7 @@ class MemberProfileProject {
 
             this.showMessage('Saving project...', 'loading');
 
-            const url = 'http://localhost:3004/api/projects';
+            const url = `${window.fvaRs.SERVER_API_URL}/projects`;                                          // .(51013.01.25)
 
             const response = await fetch(url, {
                 method: 'POST',

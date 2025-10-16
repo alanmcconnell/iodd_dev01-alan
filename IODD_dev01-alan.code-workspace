@@ -2,11 +2,11 @@
     "folders": [
         {
             "name": "iodd_dev01-alan",
-	    "path": "."
+            "path": "."
         }
     ],
     "settings": {
-        "liveServer.settings.port": 5505,
+        "liveServer.settings.port": 54332,
         "liveServer.settings.AdvanceCustomBrowserCmdLine": ""
     }
 }

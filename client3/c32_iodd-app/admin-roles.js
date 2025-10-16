@@ -1,11 +1,13 @@
 // admin-roles.js
+//      var CLIENT_PATH    = window.fvaRs.CLIENT_PATH;                                  //#.(51013.01.5)
+        var SERVER_API_URL = window.fvaRs.SERVER_API_URL;                               // .(51013.01.5)
 
 class AdminRoles {
     constructor() {
         this.originalData = {};
         this.roles = [];
         this.selectedRoleId = null;
-        this.baseUrl = window.location.protocol + '//' + window.location.hostname + ':3004';
+// this.baseUrl = window.location.protocol + '//' + window.location.hostname + ':3004'; //#.(51013.01.5)
         this.currentUser = null;
         this.init();
     }
@@ -22,7 +24,8 @@ class AdminRoles {
 
     async checkAuthentication() {
         try {
-            const response = await fetch('http://localhost:54032/api2/member/info', {
+//          const response = await fetch(`${SERVER_API_URL}/member/info`, {             //#.(51013.01.5 RAM No Workie)
+            const response = await fetch( SERVER_API_URL + '/member/info', {            // .(51013.01.5 RAM Was http://localhost:54032/api2)
                 credentials: 'include'
             });
             
@@ -117,7 +120,7 @@ class AdminRoles {
 
     async loadRoles() {
         try {
-            const response = await fetch(`${this.baseUrl}/api/roles`, {
+            const response = await fetch( SERVER_API_URL + '/roles', {                  // .(51013.01.5 RAM Was: `${this.baseUrl}/api/roles`)
                 credentials: 'include'
             });
             if (!response.ok) {
@@ -237,7 +240,8 @@ class AdminRoles {
                 formData.append('_token', csrfToken);
             }
 
-            const response = await fetch('http://localhost:3004/api/role', {
+//          const response = await fetch('http://localhost:3004/api/role', {            //#.(51013.01.5)
+            const response = await fetch( SERVER_API_URL + '/role', {                   // .(51013.01.5)                
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -299,7 +303,8 @@ class AdminRoles {
 
         try {
             // Check if role is assigned to any members
-            const checkResponse = await fetch(`http://localhost:3004/api/role-usage?id=${this.selectedRoleId}`, {
+//          const checkResponse = await fetch(`http://localhost:3004/api/role-usage?id=${this.selectedRoleId}`, {  //#.(51013.01.5)                
+            const checkResponse = await fetch( SERVER_API_URL + `/role-usage?id=${this.selectedRoleId}`, {         // .(51013.01.5)                
                 credentials: 'include'
             });
             if (!checkResponse.ok) {
@@ -331,7 +336,7 @@ class AdminRoles {
             this.showMessage('Deleting...', 'loading');
 
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-            const response = await fetch(`http://localhost:3004/api/role?id=${this.selectedRoleId}`, {
+            const response = await fetch( SERVER_API_URL + `/role?id=${this.selectedRoleId}`, {                    // .(51013.01.5)                                
                 method: 'DELETE',
                 headers: {
                     'X-CSRF-TOKEN': csrfToken || '',

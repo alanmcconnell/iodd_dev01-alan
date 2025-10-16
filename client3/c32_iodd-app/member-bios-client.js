@@ -1,7 +1,8 @@
 // Member Bios Client for webpage_members_bio_view
 class MemberBiosClient {
     constructor() {
-        this.baseUrl = 'http://localhost:3004/api';
+//      this.baseUrl        = 'http://localhost:3004/api';                              //#.(51013.01.7)
+        this.baseUrl        =  window.fvaRs.SERVER_API_URL;                             // .(51013.01.7)
     }
 
     async fetchData(endpoint) {
@@ -105,12 +106,16 @@ function displayMembersBios(data) {
     container.appendChild(membersGrid);
 }
 
-// Initialize and load data
-const client = new MemberBiosClient();
+// client will be initialized after config loads
+const client = new MemberBiosClient();   // .(51013.05.1 RAM Why wasn't this set.  Line 116 always fails if not set)
 
 async function loadMembersBios() {
     try {
         showLoading();
+        // Wait for client to be ready
+        while (!client) {
+            await new Promise(resolve => setTimeout(resolve, 10));
+        }
         const data = await client.getMembersBios();
         displayMembersBios(data);
     } catch (error) {

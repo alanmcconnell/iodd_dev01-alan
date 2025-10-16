@@ -1,7 +1,11 @@
 // Member List Client for webpage_members_info_view
+//       var SERVER_API_URL =  window.fvaRs.SERVER_API_URL;                             //#.(51013.01.9)
+
 class MemberListClient {
     constructor() {
-        this.baseUrl = 'http://localhost:3004/api';
+//      this.baseUrl        = 'http://localhost:54032/api2';                            //#.(51013.01.9)
+//      this.baseUrl        = 'http://localhost:3004/api';                              //#.(51013.01.9)
+        this.baseUrl        =  window.fvaRs.SERVER_API_URL;                             // .(51013.01.9)
     }
 
     async fetchData(endpoint) {

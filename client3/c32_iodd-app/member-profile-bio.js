@@ -50,7 +50,7 @@ class MemberProfileBio {
 
     async loadMembersList() {
         try {
-            const response = await fetch('http://localhost:3004/api/list/members');
+            const response = await fetch(`${window.fvaRs.SERVER_API_URL}/list/members`);             // .(51013.01.17)            
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -126,7 +126,7 @@ class MemberProfileBio {
         try {
             this.showMessage('Loading member data...', 'loading');
 
-            const response = await fetch(`http://localhost:3004/api/members?id=${memberId}`, {
+            const response = await fetch(`${window.fvaRs.SERVER_API_URL}/members?id=${memberId}`, {  // .(51013.01.17)                
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
@@ -214,7 +214,7 @@ class MemberProfileBio {
 
             console.log('Params contents:', Array.from(params.entries()));
 
-            const response = await fetch('http://localhost:3004/api/member_bio', {
+            const response = await fetch(`${window.fvaRs.SERVER_API_URL}/member_bio`, {              // .(51013.01.17)                
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'

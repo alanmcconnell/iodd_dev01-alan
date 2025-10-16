@@ -1,7 +1,6 @@
 // Global variable to store member ID
-window.gMemberId = null;
-
-
+  window.gMemberId = null;
+     var SERVER_API_URL = window.fvaRs.SERVER_API_URL;                               // .(51013.01.5)
 
 class MemberProfileClient {
     constructor() {
@@ -26,7 +25,8 @@ class MemberProfileClient {
     async loadMemberByEmail(email) {
         try {
             console.log('Fetching member data for email:', email);
-            const response = await fetch(`http://localhost:3004/api/members?email=${encodeURIComponent(email)}`);
+//          const response = await fetch( `http://localhost:3004/api/members?email=${encodeURIComponent(email)}`);  //#.(51013.01.11)
+            const response = await fetch(         `${SERVER_API_URL}/members?email=${encodeURIComponent(email)}`);  // .(51013.01.11)
             const data = await response.json();
             
             if (response.ok && data.members && data.members.length > 0) {
@@ -338,7 +338,7 @@ class MemberProfileClient {
         }
         
         try {
-            const response = await fetch(`http://localhost:3004/api/members?id=${window.gMemberId}`);
+            const response = await fetch(`${SERVER_API_URL}/members?id=${window.gMemberId}`);
             const data = await response.json();
             
             if (response.ok && data.members && data.members.length > 0) {

@@ -1,7 +1,7 @@
 // Project List Client
 class ProjectListClient {
     constructor() {
-        this.baseUrl = 'http://localhost:3004/api';
+        this.baseUrl = window.fvaRs.SERVER_API_URL;                                       // .(51013.01.33)        
     }
 
     async fetchData(endpoint) {

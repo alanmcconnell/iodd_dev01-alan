@@ -5,7 +5,7 @@ class MemberListClient {
     constructor() {
 //      this.baseUrl        = 'http://localhost:54032/api2';                            //#.(51013.01.9)
 //      this.baseUrl        = 'http://localhost:3004/api';                              //#.(51013.01.9)
-        this.baseUrl        =  window.fvaRs.SERVER_API_URL;                             // .(51013.01.9 RAM Required <script src="_config.js")
+        this.baseUrl        =  window.fvaRs.SERVER_API_URL;                             // .(51013.01.9)
     }
 
     async fetchData(endpoint) {

@@ -4,8 +4,8 @@ class ContactEmailsManager {
         this.contactData = [];
         this.selectedContactId = null;
         this.jwtToken = this.getJWTToken();
-        this.apiBaseUrl = 'http://localhost:3004/api';
-        
+        this.apiBaseUrl = 'http://localhost:3004/api';                                  //#.(51013.01.19)
+        this.apiBaseUrl = window.fvaRs.SERVER_API_URL;                                  // .(51013.01.19)        
         this.init();
     }
 
@@ -29,7 +29,7 @@ class ContactEmailsManager {
     async loadContactEmails() {
         try {
             console.log('Fetching from:', `${this.apiBaseUrl}/contactmail`);
-            const response = await fetch(`${this.apiBaseUrl}/contactmail`, {
+            const response = await fetch( `${this.apiBaseUrl}/contactmail`, {           // .(51013.01.19)
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${this.jwtToken}`,

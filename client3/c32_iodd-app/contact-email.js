@@ -1,5 +1,5 @@
 // API configuration matching other working pages
-//    var API_BASE_URL       = 'http://localhost:3004/api';
+//    var API_BASE_URL       = 'http://localhost:3004/api';                             //#.(51013.01.13)
       var API_BASE_URL       = window.fvaRs.SERVER_API_URL;                             // .(51013.01.13)
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -71,7 +71,8 @@ async function submitForm() {
     
     // Try to submit to API
     try {
-        const response = await fetch(`${API_BASE_URL}/contact`, {
+//      const response = await fetch(`${API_BASE_URL}/contact`, {
+        const response = await fetch(   API_BASE_URL + '/contact', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

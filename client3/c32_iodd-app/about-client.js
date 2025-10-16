@@ -173,7 +173,7 @@ class AboutClient {
             
             // Try to use the query endpoint
             try {
-                /* const response = await fetch(`${this.baseUrl}/query`, {
+               /* const response = await fetch(`${this.baseUrl}/query`, {
                 //const response = await fetch(`${this.baseUrl}/tableorview`, {
                     method: 'POST',
                     headers: {

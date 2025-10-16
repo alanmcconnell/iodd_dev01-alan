@@ -1,7 +1,8 @@
 // Member Bios Client for webpage_members_bio_view
 class MemberBiosClient {
     constructor() {
-        this.baseUrl        = window.fvaRs.SERVER_API_URL;                              // .(51013.01.7)
+//      this.baseUrl        = 'http://localhost:3004/api';                              //#.(51013.01.7)
+        this.baseUrl        =  window.fvaRs.SERVER_API_URL;                             // .(51013.01.7)
     }
 
     async fetchData(endpoint) {
@@ -106,6 +107,7 @@ function displayMembersBios(data) {
 }
 
 // client will be initialized after config loads
+const client = new MemberBiosClient();   // .(51013.05.1 RAM Why wasn't this set.  Line 116 always fails if not set)
 
 async function loadMembersBios() {
     try {

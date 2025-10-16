@@ -120,7 +120,7 @@ class AdminRoles {
 
     async loadRoles() {
         try {
-            const response = await fetch( SERVER_API_URL + '/api/roles', {              // .(51013.01.5 RAM Was: `${this.baseUrl}/api/roles`)
+            const response = await fetch( SERVER_API_URL + '/roles', {                  // .(51013.01.5 RAM Was: `${this.baseUrl}/api/roles`)
                 credentials: 'include'
             });
             if (!response.ok) {
@@ -240,7 +240,8 @@ class AdminRoles {
                 formData.append('_token', csrfToken);
             }
 
-            const response = await fetch('http://localhost:3004/api/role', {
+//          const response = await fetch('http://localhost:3004/api/role', {            //#.(51013.01.5)
+            const response = await fetch( SERVER_API_URL + '/role', {                   // .(51013.01.5)                
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -302,7 +303,8 @@ class AdminRoles {
 
         try {
             // Check if role is assigned to any members
-            const checkResponse = await fetch(`http://localhost:3004/api/role-usage?id=${this.selectedRoleId}`, {
+//          const checkResponse = await fetch(`http://localhost:3004/api/role-usage?id=${this.selectedRoleId}`, {  //#.(51013.01.5)                
+            const checkResponse = await fetch( SERVER_API_URL + `/role-usage?id=${this.selectedRoleId}`, {         // .(51013.01.5)                
                 credentials: 'include'
             });
             if (!checkResponse.ok) {
@@ -334,7 +336,7 @@ class AdminRoles {
             this.showMessage('Deleting...', 'loading');
 
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-            const response = await fetch(`http://localhost:3004/api/role?id=${this.selectedRoleId}`, {
+            const response = await fetch( SERVER_API_URL + `/role?id=${this.selectedRoleId}`, {                    // .(51013.01.5)                                
                 method: 'DELETE',
                 headers: {
                     'X-CSRF-TOKEN': csrfToken || '',

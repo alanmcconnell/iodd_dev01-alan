@@ -349,7 +349,7 @@
         <div class="footer-links"></div>
     </footer>
 
-    <script src="_config.js"></script>                                                <!-- .(51013.01.1 RAM New config) -->
+    <script src="_config.js"></script>                                                <!-- .(51013.01.2 RAM New config) -->
     <script src="../../lib/global-token-functions.js"></script>
     <script src="../../lib/acm_Prompts.js"></script>
     <script src="footer-content.js"></script>
@@ -366,10 +366,11 @@
 //              var aHRef = "http://localhost:3005/login_client.html"
 //                        + "?redirect_url=" + encodeURIComponent('http://localhost:5505/client3/c32_iodd-app/member-profile.html')
 //                        + "&failure_url="  + encodeURIComponent('http://localhost:5505/client3/c32_iodd-app/index.html');
+                var aHRef = LOGIN_PAGE
                           + "?redirect_url=" + encodeURIComponent( LOGIN_SUCCESS )
                           + "&failure_url="  + encodeURIComponent( LOGIN_FAILURE );
-                alert(LOGIN_PAGE);
-                window.location.href = LOGIN_PAGE;
+                alert( `IODD/c32/.index.html:\n${aHRef}` );
+                window.location.href = aHRef ;
             });                                                                         // .(51013.06.2 End)
 
             const logo = document.getElementById('logo');                               // .(51013.05.2) 
@@ -403,7 +404,8 @@
         const email = urlParams.get('email');
         if (email) {
             console.log('Email from URL:', email);
-            fetch(`http://localhost:54032/api2/user_by_email?email=${encodeURIComponent(email)}`)
+//          fetch(   `http://localhost:54032/api2/user_by_email?email=${encodeURIComponent(email)}`)        //#.(51013.01.1)
+            fetch(`${window.fvaRs.SERVER_API_URL}/user_by_email?email=${encodeURIComponent(email)}`)        // .(51013.01.1)
                 .then(response => {
                     console.log('Response status:', response.status);
                     return response.json();
@@ -428,7 +430,8 @@
                         console.log('Setting gMemberId:', window.gMemberId, 'gRoleId:', window.gRoleId);
                         
                         // Fetch role name (only active roles)
-                        fetch(`http://localhost:54032/api2/webpage_roles_view`)
+//                      fetch(   `http://localhost:54032/api2/webpage_roles_view`)                          //#.(51013.01.1 IODD ??)
+                        fetch(`${window.fvaRs.SERVER_API_URL}/webpage_roles_view`)                          // .(51013.01.1 IODD)
                             .then(response => response.json())
                             .then(roles => {
                                 const role = roles.find(r => r.Id == window.gRoleId && r.Active === 'Yes');

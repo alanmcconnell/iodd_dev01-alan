@@ -123,6 +123,17 @@
     import { putData, getStyles,  sndJSON,  traceR, __appDir  } from './assets/mjs/formr_server-fns.mjs';   // .(50702.02.3).(30403.05.3 RAM Add putData).(30403.06.5 RAM Add chkSQL).(30404.03.1)# .(30412.02.4)
     import { chkSQL,  fmtFld4SQL, logIP,    getIPAddr, shell  } from './assets/mjs/formr_server-fns.mjs';   // .(50703.03.1).(50702.02.4).(30526.02.4 RAM Add logIP, getIPAddr).(30527.02.1 RAM Add fmtFld4SQL)
 //
+    import      '../_config.js'                                                                             // .(51013.02.1 RAM Read this)
+//await import( '../_config.js' )                                                                           //#.(51013.02.1 RAM Load process.fvaR in IODD-Server_u1.08.mjs)
+
+       var  SERVER_API_URL            =  process.fvaRs.SERVER_API_URL                                       // .(51013.02.3 RAM Define here)
+            process.env.Local_API_URL =  process.fvaRs.SERVER_API_URL                                       // .(51013.02.2 RAM Use fvaR instead)
+            process.env.PORT          =  SERVER_API_URL.match(   /:([0-9]+)\/?/)?.slice(1,2)[0] ?? ''       // .(51013.02.3 RAM Define them here)
+            process.env.HOST          =  SERVER_API_URL.match(/(.+):[0-9]+\/?/ )?.slice(1,2)[0] ?? ''       // .(51013.02.4)
+            process.env.Local_Host    = `${process.env.HOST}:${process.env.PORT}`                           // .(51013.02.5)
+            process.env.Host_Location =  process.fvaRs.SERVER_LOCATION                                      // .(51013.02.6)
+       var  SECURE_API_URL            =  process.fvaRs.SECURE_API_URL  // not SECURE_PATH                   // .(51013.02.7 RAM Define here)
+
 //  ------  ---- ----- =  ------|  -------------------------------- ------------------- ------------------+
 
        var  aPlatform  =  process.platform; // 'win32', 'darwin', 'linux', etc.
@@ -134,7 +145,7 @@
             console.log( `__dirname: '${__dirname}'`)
 
 //          process.env=  await getEnv( `${aEnv_Dir}/.env` )
-            process.env=  getEnv_sync(  aEnv_File ); // var pEnv = process.env                         // .(50706.03.3).(30222.01.2 RAM Get it myself).(30322.03.1 End).(30412.01.9 RAM no await)
+            process.env=  getEnv_sync(  aEnv_File ); // var pEnv = process.env                              // .(50706.03.3).(30222.01.2 RAM Get it myself).(30322.03.1 End).(30412.01.9 RAM no await)
 
 //          console.log( `Hello: process.argv[1]: '${process.argv[1]}'` ); //process.exit()
 //      if (process.argv[1].replace( /.*[\\/]/, '' ).match( /IODD.*\.mjs/ )) {
@@ -142,12 +153,13 @@
        var  bQuiet //  =  true        // Override .env Quiet = {true|false}
        var  aAPI_URL //= 'api2'       // Override .env API_URL                          // .(30408.02.3)
 
-       var  nPort  //  =  3013        // Override .env Server_Port
+//     var  nPort  //  =  3013        // Override .env Server_Port
 //     var  nPort      =  54032       // Override .env Server_Port
-       var  nPort      =  nPort ? nPort : process.env.Server_Port                       // .(50703.03.1 RAM Set it here).(30312.02.1 RAM Set nPort for FRApps/server3/s36_mysql-data-api )
+//     var  nPort      =  nPort ? nPort : process.env.Server_Port                       //#.(50703.03.1 RAM Set it here).(30312.02.1 RAM Set nPort for FRApps/server3/s36_mysql-data-api ).(51013.02.8)
+       var  nPort      =  nPort ? nPort : process.env.PORT                              // .(51013.02.8 RAM Was Server_Port).(50703.03.1 RAM Set it here).(30312.02.1 RAM Set nPort for FRApps/server3/s36_mysql-data-api )
 /*
-       var  pOut       =  await shell( "frt ports", 'quietly' )                      // .(50707.03.1 RAM Don't say error)     
-//     var  pOut       =  await shell( `npx kill port ${nPort}`, 'not quietly' )                      // .(50707.03.1 RAM Don't say error)     
+       var  pOut       =  await shell( "frt ports", 'quietly' )                         // .(50707.03.1 RAM Don't say error)     
+//     var  pOut       =  await shell( `npx kill port ${nPort}`, 'not quietly' )        // .(50707.03.1 RAM Don't say error)     
 
         if (pOut.stderr > "") {
             console.log( `\n* Sorry, can't try to kill port: ${nPort} using: frt ports.` )
@@ -168,7 +180,7 @@
 //          console.log( `HostLocation: '${aHostLocation}'`)
 //     var  aRemote_Host= process.env.Remote_Host]                                                          //#.(30322.03.2 RAM I-Yi-Yai?).(30410.03.8).(50703.01.2)
        var  aRemote_Host  =  process.env[`${aHostLocation}_Host`]                                           // .(50703.01.2).(30322.03.2 RAM I-Yi-Yai?).(30410.03.8)
-//     var  aAPI_Host     =  process.env.API_Host                                                           //# .(30412.02.8 RAM Or aAPI_URL).(50703.01.3)
+//     var  aAPI_Host     =  process.env.API_Host                                                           //#.(30412.02.8 RAM Or aAPI_URL).(50703.01.3)
 //          console.log( `aRemote_Host: '${aRemote_Host}'`)
 
 //          console.log( `\${aHostLocation}_API_URL: '${aHostLocation}_API_URL'`)
@@ -176,17 +188,17 @@
 
 //          console.log( `aAPI_URL: '${aAPI_URL}'`)
             aAPI_URL      =  aAPI_URL ? aAPI_URL.replace( /{PORT}/, nPort ) : `/api2/${nPort}`
-            aRemote_Host  = aRemote_Host.replace( /{PORT}/, nPort )                     // .(50707.02.x RAM Try this)
+            aRemote_Host  =  aRemote_Host.replace( /{PORT}/, nPort )                    // .(50707.02.x RAM Try this)
 
      // Extract just the path portion for Express routes
-        var aAPI_Path    =  new URL(aAPI_URL).pathname                                  // .(50918.05.1 CAI Create API_Path as /api2/)
-//   global.aAPI_Host    =  aAPI_URL                                                    //#.(50918.05.2 CAI Not full URL)
-     global.aAPI_Host    =  aAPI_Path                                                   // .(50918.05.2 CAI Use API_Path as /api2)
+        var aAPI_Path     =  new URL(aAPI_URL).pathname                                 // .(50918.05.1 CAI Create API_Path as /api2/)
+//   global.aAPI_Host     =  aAPI_URL                                                   //#.(50918.05.2 CAI Not full URL)
+     global.aAPI_Host     =  aAPI_Path                                                  // .(50918.05.2 CAI Use API_Path as /api2)
 //     var  aAPI_Host     = `${aRemote_Host}${aAPI_URL}`                                //#.(50707.02.5 RAM Wrong) 
-     global.aRemote_Host =  aRemote_Host                                                // .(50707.02.1 RAM Needed in formr_server-fns.start)
-     global.aPlatform    =  aPlatform                                                   // Make platform info globally available
-     global.isWindows    =  isWindows
-     global.isMac        =  isMac
+     global.aRemote_Host  =  aRemote_Host                                               // .(50707.02.1 RAM Needed in formr_server-fns.start)
+     global.aPlatform     =  aPlatform                                                  // Make platform info globally available
+     global.isWindows     =  isWindows
+     global.isMac         =  isMac
 
             console.log( "")
             console.log( `aRemote_Host: '${aRemote_Host}'`)
@@ -213,10 +225,23 @@
 
        var  pApp, pDB, aAPI_Host          // Doesn't work for bQuiet, because it is not used in this module
        var  pApp  =  express()                                                          // .(30406.02.2 RAM pApp is now local to IODD)
-       
+
+            process.fvaRs.CLIENT_HOST = process.fvaRs.CLIENT_PATH.replace( /(:[0-9]+)\/.+/, "$1")                  // .(51013.02.9 RAM Need HOST not PATH) 
        // Configure CORS
+       const corsOrigins = [ process.fvaRs.CLIENT_HOST, process.fvaRs.CLIENT_HOST.replace( /\/\/localhost/, "//127.0.0.1" ) // .(51013.02.10 ) RAM Set CORS to      allow the IODD Client pages on a different port)
+                           , process.fvaRs.SECURE_PATH, process.fvaRs.SECURE_PATH.replace( /\/\/localhost/, "//127.0.0.1" ) // .(51013.02.11) RAM Set CORS to also allow the SecureAccess Client pages)
+                             ];
+       console.log('CORS Origins:', JSON.stringify( corsOrigins, '', 2 ));
        pApp.use(cors({
-           origin: ['http://127.0.0.1:5500', 'http://127.0.0.1:5501', 'http://127.0.0.1:5505', 'http://localhost:5500', 'http://localhost:5501', 'http://localhost:5505'],
+           origin: corsOrigins,   
+           credentials: true,
+           methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+           allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+       }));
+       
+       // Handle preflight requests
+       pApp.options('*', cors({
+           origin: corsOrigins,
            credentials: true
        }));
        

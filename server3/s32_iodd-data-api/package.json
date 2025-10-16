@@ -1,17 +1,12 @@
 {
-    "name": "s36-mysql-data-api",
+    "name": "iodd_dev01-alan_s32_iodd-data-api",
     "version": "2.02",
     "author": "Alan McConnell",
     "license": "ISC",
     "type": "module",
-    "dependencies": {
-        "cookie-parser": "^1.4.7",
-        "cors": "^2.8.5",
-        "nodemailer": "^7.0.9"
-    },
     "scripts": {
         "start": "nodemon server.mjs",
-        "restart": "clear && open http://127.0.0.1:5501/client3/c32_iodd-app/index.html & npm start"
+        "restart": "clear && npm start"
     },
     "browserslist": {
         "production": [

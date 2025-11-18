@@ -1,6 +1,7 @@
-Archive
+archive
 node_modules
 .env
+.amazonq*
 .DS_Store
 yarn.lock
 *.bak

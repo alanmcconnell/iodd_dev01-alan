@@ -24,42 +24,65 @@ document.addEventListener('DOMContentLoaded', async function() {
     setupEventListeners();
 });
 
-// Check authentication and set user permissions
-async function checkAuthentication() {
+// Get JWT token value
+function getJWTValue(key) {
     try {
-//      const response = await fetch( 'http://localhost:54032/api2/member/info', {       //#.(51013.01.23)             
-//      const response = await fetch(`${window.fvaRs.AUTH_API_URL}/member/info`, {       //#.(51013.01.23)             
-        const response = await fetch(`${window.fvaRs.SERVER_API_URL}/member/info`, {     // .(51013.01.23)             
-            credentials: 'include'
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            currentUser = data.success ? data.member : null;
+        const payload = acmJWTGetPayload();
+        if (payload && payload[key]) {
+            return payload[key];
         }
     } catch (error) {
-        console.error('JWT server unavailable, using fallback authentication:', error);
+        console.log(`JWT payload read failed for ${key}:`, error.message);
     }
     
-    // Fallback authentication when JWT server is unavailable
-    if (!currentUser) {
-        // Use global variables if available
-        if (typeof gMemberId !== 'undefined' && typeof gRole !== 'undefined') {
-            currentUser = {
-                MemberNo: gMemberId,
-                Role: gRole
-            };
+    if (key === 'user_role') return window.gRole;
+    if (key === 'user_no') return window.gMemberId;
+    return null;
+}
+
+// Check authentication and set user permissions
+async function checkAuthentication() {
+    const memberId = getJWTValue('user_no') || window.gMemberId;
+    const memberRole = getJWTValue('user_role') || window.gRole || 'Member';
+    
+    // Update global variables for consistency
+    if (memberId && memberRole) {
+        window.gMemberId = memberId;
+        window.gRole = memberRole;
+    }
+    
+    currentUser = {
+        MemberNo: memberId,
+        Role: memberRole
+    };
+    
+    console.log('Auth ready - Role:', memberRole, 'UserNo:', memberId);
+    
+    // Apply role-based permissions
+    applyRolePermissions();
+}
+
+// Apply role-based permissions
+function applyRolePermissions() {
+    const userRole = currentUser?.Role;
+    
+    if (typeof RolePermissions !== 'undefined') {
+        const buttonVisibility = RolePermissions.getButtonVisibility(userRole, currentUser?.MemberNo, null);
+        addBtn.style.display = buttonVisibility.add ? 'inline-block' : 'none';
+        deleteBtn.style.display = buttonVisibility.delete ? 'inline-block' : 'none';
+        submitBtn.style.display = buttonVisibility.submit ? 'inline-block' : 'none';
+        cancelBtn.style.display = buttonVisibility.cancel ? 'inline-block' : 'none';
+    } else {
+        // Fallback logic - Members get read-only access
+        if (userRole === 'Member') {
+            addBtn.style.display = 'none';
+            deleteBtn.style.display = 'none';
+            submitBtn.style.display = 'none';
         } else {
-            // Default to Admin role for testing when no authentication available
-            currentUser = {
-                MemberNo: 1,
-                Role: 'Admin'
-            };
+            addBtn.disabled = false;
+            submitBtn.disabled = false;
         }
     }
-    
-    // All roles (Admin, Editor, Member) have full access including Add/Delete/Submit rights
-    addBtn.disabled = false;
 }
 
 // Setup event listeners
@@ -305,6 +328,11 @@ function displayMembers() {
 
 // Button handlers (placeholder functions)
 function handleAdd() {
+    const userRole = getJWTValue('user_role') || currentUser?.Role;
+    if (userRole === 'Member') {
+        showMessage('You do not have permission to add project members', 'error');
+        return;
+    }
     
     if (!selectedProjectId) {
         showMessage('No project selected', 'error');
@@ -330,6 +358,11 @@ function handleAdd() {
 }
 
 async function handleDelete() {
+    const userRole = getJWTValue('user_role') || currentUser?.Role;
+    if (userRole === 'Member') {
+        showMessage('You do not have permission to delete project members', 'error');
+        return;
+    }
     
     if (selectedMemberIndex === null) {
         showMessage('No member selected for deletion', 'error');
@@ -378,6 +411,11 @@ async function handleDelete() {
 }
 
 async function handleSubmit() {
+    const userRole = getJWTValue('user_role') || currentUser?.Role;
+    if (userRole === 'Member') {
+        showMessage('You do not have permission to save project member changes', 'error');
+        return;
+    }
     
     if (!selectedProjectId) {
         showMessage('No project selected', 'error');

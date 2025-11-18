@@ -40,12 +40,41 @@ class MemberProfileBio {
     async waitForAuth() {
         let attempts = 0;
         let delay = 50;
-        while (attempts < 10 && (!window.gRole || !window.gMemberId)) {
+        let userRole, userNo;
+        
+        while (attempts < 10) {
+            userRole = this.getJWTValue('user_role');
+            userNo = this.getJWTValue('user_no');
+            if (userRole && userNo) break;
+            
             await new Promise(resolve => setTimeout(() => resolve(), delay));
             attempts++;
             delay = Math.min(delay * 1.5, 500);
         }
-        console.log('Auth ready - Role:', window.gRole, 'MemberId:', window.gMemberId);
+        console.log('Auth ready - Role:', userRole, 'UserNo:', userNo);
+        
+        // Override global variables for consistency
+        if (userRole && userNo) {
+            window.gRole = userRole;
+            window.gMemberId = userNo;
+        }
+    }
+
+    getJWTValue(key) {
+        try {
+            // Get JWT payload from app_token
+            const payload = acmJWTGetPayload();
+            if (payload && payload[key]) {
+                return payload[key];
+            }
+        } catch (error) {
+            console.log(`JWT payload read failed for ${key}:`, error.message);
+        }
+        
+        // Fallback to window globals for compatibility
+        if (key === 'user_role') return window.gRole;
+        if (key === 'user_no') return window.gMemberId;
+        return null;
     }
 
     async loadMembersList() {
@@ -119,7 +148,8 @@ class MemberProfileBio {
     }
 
     getMemberId() {
-        return this.selectedMemberId || window.gMemberId || window.parent?.gMemberId;
+        if (this.selectedMemberId) return this.selectedMemberId;
+        return this.getJWTValue('user_no') || window.gMemberId || window.parent?.gMemberId;
     }
 
     async loadMemberDataById(memberId) {
@@ -196,6 +226,16 @@ class MemberProfileBio {
 
     async saveMemberData() {
         try {
+            // Security check for Member role
+            const userRole = this.getJWTValue('user_role') || window.gRole;
+            const currentUserId = this.getJWTValue('user_no') || window.gMemberId;
+            
+            const targetUserId = this.selectedMemberId;
+            if (userRole === 'Member' && currentUserId != targetUserId) {
+                this.showMessage('You can only edit your own record', 'error');
+                return;
+            }
+            
             const memberId = this.getMemberId();
             if (!memberId) {
                 this.showMessage('No member ID available', 'error');
@@ -306,22 +346,28 @@ class MemberProfileBio {
     }
 
     applyRolePermissions() {
-        const userRole = window.gRole;
+        const userRole = this.getJWTValue('user_role') || window.gRole;
+        const currentUserId = this.getJWTValue('user_no') || window.gMemberId;
+        
         const submitBtn = document.getElementById('submitBtn');
         const cancelBtn = document.getElementById('cancelBtn');
+        const targetUserId = this.selectedMemberId;
         
-        // Admin and Editor always see buttons
-        if (userRole === 'Admin' || userRole === 'Editor') {
-            if (submitBtn) submitBtn.style.display = 'inline-block';
-            if (cancelBtn) cancelBtn.style.display = 'inline-block';
-        }
-        // Members only see buttons for their own record
-        else if (userRole === 'Member') {
-            const currentUserId = window.gMemberId;
-            const targetUserId = this.selectedMemberId;
-            const canEdit = currentUserId && targetUserId && (currentUserId == targetUserId);
-            if (submitBtn) submitBtn.style.display = canEdit ? 'inline-block' : 'none';
-            if (cancelBtn) cancelBtn.style.display = canEdit ? 'inline-block' : 'none';
+        // Use RolePermissions class for consistent security
+        if (typeof RolePermissions !== 'undefined') {
+            const buttonVisibility = RolePermissions.getButtonVisibility(userRole, currentUserId, targetUserId);
+            if (submitBtn) submitBtn.style.display = buttonVisibility.submit ? 'inline-block' : 'none';
+            if (cancelBtn) cancelBtn.style.display = buttonVisibility.cancel ? 'inline-block' : 'none';
+        } else {
+            // Fallback logic
+            if (userRole === 'Admin' || userRole === 'Editor') {
+                if (submitBtn) submitBtn.style.display = 'inline-block';
+                if (cancelBtn) cancelBtn.style.display = 'inline-block';
+            } else if (userRole === 'Member') {
+                const canEdit = currentUserId && targetUserId && (currentUserId == targetUserId);
+                if (submitBtn) submitBtn.style.display = canEdit ? 'inline-block' : 'none';
+                if (cancelBtn) cancelBtn.style.display = canEdit ? 'inline-block' : 'none';
+            }
         }
     }
 }

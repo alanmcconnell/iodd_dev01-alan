@@ -15,26 +15,58 @@ class MemberProfileProject {
         this.loadProjects();
     }
 
-    async checkAuthentication() {
-        // Use global member variables if available
-        const memberId = window.gMemberId || window.gMemberNo || window.parent?.gMemberId || window.parent?.gMemberNo;
-        const memberRole = window.gRole || window.parent?.gRole || 'Admin';
-        
-        if (memberId) {
-            this.currentUser = { 
-                MemberId: memberId, 
-                Role: memberRole 
-            };
-        } else {
-            // Default admin user for testing
-            this.currentUser = { Role: 'Admin' };
+    getJWTValue(key) {
+        try {
+            const payload = acmJWTGetPayload();
+            if (payload && payload[key]) {
+                return payload[key];
+            }
+        } catch (error) {
+            console.log(`JWT payload read failed for ${key}:`, error.message);
         }
         
-        // Enable buttons based on role
-        const canModify = this.currentUser.Role === 'Admin' || this.currentUser.Role === 'Editor';
-        document.getElementById('addBtn').disabled = !canModify;
-        document.getElementById('deleteBtn').disabled = true; // Will be enabled when project selected
-        document.getElementById('submitBtn').disabled = true; // Will be enabled when editing
+        if (key === 'user_role') return window.gRole;
+        if (key === 'user_no') return window.gMemberId;
+        return null;
+    }
+
+    async checkAuthentication() {
+        const memberId = this.getJWTValue('user_no') || window.gMemberId || window.parent?.gMemberId;
+        const memberRole = this.getJWTValue('user_role') || window.gRole || window.parent?.gRole || 'Member';
+        
+        // Update global variables for consistency
+        if (memberId && memberRole) {
+            window.gMemberId = memberId;
+            window.gRole = memberRole;
+        }
+        
+        this.currentUser = { 
+            MemberId: memberId, 
+            Role: memberRole 
+        };
+        
+        console.log('Auth ready - Role:', memberRole, 'UserNo:', memberId);
+        
+        // Apply role-based permissions
+        this.applyRolePermissions();
+    }
+
+    applyRolePermissions() {
+        const userRole = this.currentUser?.Role;
+        
+        if (typeof RolePermissions !== 'undefined') {
+            const buttonVisibility = RolePermissions.getButtonVisibility(userRole, this.currentUser?.MemberId, null);
+            document.getElementById('addBtn').style.display = buttonVisibility.add ? 'inline-block' : 'none';
+            document.getElementById('deleteBtn').style.display = buttonVisibility.delete ? 'inline-block' : 'none';
+            document.getElementById('submitBtn').style.display = buttonVisibility.submit ? 'inline-block' : 'none';
+            document.getElementById('cancelBtn').style.display = buttonVisibility.cancel ? 'inline-block' : 'none';
+        } else {
+            // Fallback logic
+            const canModify = userRole === 'Admin' || userRole === 'Editor';
+            document.getElementById('addBtn').disabled = !canModify;
+            document.getElementById('deleteBtn').disabled = true;
+            document.getElementById('submitBtn').disabled = true;
+        }
     }
 
     setupEventListeners() {
@@ -73,7 +105,7 @@ class MemberProfileProject {
     }
 
     getMemberId() {
-        const memberId = window.gMemberId || window.parent?.gMemberId;
+        const memberId = this.getJWTValue('user_no') || window.gMemberId || window.parent?.gMemberId;
         if (!memberId) {
             console.warn('No member ID available');
         }
@@ -217,8 +249,9 @@ class MemberProfileProject {
     }
 
     addProject() {
-        if (!this.currentUser || (this.currentUser.Role !== 'Admin' && this.currentUser.Role !== 'Editor')) {
-            this.showMessage('Admin or Editor role required', 'error');
+        const userRole = this.getJWTValue('user_role') || this.currentUser?.Role;
+        if (userRole === 'Member') {
+            this.showMessage('You do not have permission to add projects', 'error');
             return;
         }
         
@@ -237,8 +270,9 @@ class MemberProfileProject {
     }
 
     async deleteProject() {
-        if (!this.currentUser || (this.currentUser.Role !== 'Admin' && this.currentUser.Role !== 'Editor')) {
-            this.showMessage('Admin or Editor role required', 'error');
+        const userRole = this.getJWTValue('user_role') || this.currentUser?.Role;
+        if (userRole === 'Member') {
+            this.showMessage('You do not have permission to delete projects', 'error');
             return;
         }
         
@@ -277,8 +311,9 @@ class MemberProfileProject {
     }
 
     async saveProject() {
-        if (!this.currentUser || (this.currentUser.Role !== 'Admin' && this.currentUser.Role !== 'Editor')) {
-            this.showMessage('Admin or Editor role required', 'error');
+        const userRole = this.getJWTValue('user_role') || this.currentUser?.Role;
+        if (userRole === 'Member') {
+            this.showMessage('You do not have permission to save projects', 'error');
             return;
         }
         
@@ -372,12 +407,20 @@ class MemberProfileProject {
     }
 
     updateButtons() {
+        const userRole = this.getJWTValue('user_role') || this.currentUser?.Role;
         const deleteBtn = document.getElementById('deleteBtn');
         const submitBtn = document.getElementById('submitBtn');
-        const canModify = this.currentUser && (this.currentUser.Role === 'Admin' || this.currentUser.Role === 'Editor');
+        const canModify = userRole === 'Admin' || userRole === 'Editor';
         
         deleteBtn.disabled = !this.selectedProject || !canModify;
         submitBtn.disabled = !this.isEditing || !canModify;
+        
+        // Hide buttons for Members
+        if (userRole === 'Member') {
+            deleteBtn.style.display = 'none';
+            submitBtn.style.display = 'none';
+            document.getElementById('addBtn').style.display = 'none';
+        }
     }
 
     autoSaveToLocal() {

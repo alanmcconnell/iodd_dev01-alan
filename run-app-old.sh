@@ -2,16 +2,12 @@
 
   nPrj=54  # Can't be greater than 64   # .(51013.05.1 IODD Project Number
   nUseThisClientPort="54332"            # .(51013.05.1 Use Normal Client Port for IODD)
-  nUseThisStage=3                       # .(51017.05.1 Ok force it the Stage)
 
   nStg=4; if [[ "$(realpath "$0")" == *dev* ]]; then nStg=3; fi
           if [[ "$(realpath "$0")" == *tes* ]]; then nStg=2; fi
           if [[ "$(realpath "$0")" == *pro* ]]; then nStg=1; fi
-          if [  "${nUseThisStage}" != ""     ]; then nStg=${nUseThisStage}; fi          # .(51017.05.2)
   nApp=1
   nPort="${nPrj}${nStg}##"
-
-# ---------------------------------------------------
 
   if [ "$1" == "" ]; then
      echo -e "\n  Run Client and/or Server App(s) for Project 54"
@@ -26,20 +22,10 @@
      echo -e   "     Runs: Client App on Port 54332 and Server API on Port 54382"
      if [ "${OS:0:3}" != "Win" ]; then echo ""; fi
      exit; fi
-# ---------------------------------------------------
 
   aQuiet=""; if [ "$2" == "-q" ]; then aQuiet="--quiet "; set -- "$1" "${@:3}"; fi
              if [ "$3" == "-q" ]; then aQuiet="--quiet "; fi
 
-# ---------------------------------------------------
-
-function checkFW() {
-    bOK="$( sudo ufw status | awk '/'$1'/ { print 1 }; END { print 0 }' )"
-    if [ "${bOK}" == "0" ]; then sudo ufw allow $1/tcp > /dev/null 2>&1;
-#                                sudo ufw delete allow 54332/tcp
-    echo "    Opened firewall for port: $1"
-    fi
-    }
 # ---------------------------------------------------
 
 # Function to kill process on a specific port
@@ -63,7 +49,6 @@ function chkPort() {
             echo "  Killing linux process $pid for port $port"
             kill -9 $pid > /dev/null 2>&1 | awk '{ print "  " $0 }'
         fi
-        checkFW $port
     fi
 }
 # ---------------------------------------------------
@@ -104,78 +89,35 @@ if [ "${aAppName}" == "" ] || [ "${aAppName}" == "Unknown" ]; then              
    if [ "${aHost}" == "" ]; then aHost="localhost"; fi;                                 # .(50911.03.x)
    }
 # ---------------------------------------------------
-function getFVar( ) {                                                             # .(50915.02.1 RAM Write getFVar)
-         aAWKpgm="'/^[,\\ \"]*${aFVar}[\\ \"]*:/ { sub( /^[,\\ \"]*${aFVar}[\\ \"]*:/,\\ \"\" ); sub( /.+= */,\\ \"\" ); print }'"
-#        aAWKpgm='/^[,\ "]*'"${aFVar}"'[ "]*:/ { sub( /^[,\ \"]*'"${aFVar}"'[ "]*:/, "" ); sub( /.+= */,\ "" ); print }'
-#                 /^[,\ "]*VARNAME[\ "]*:/ { sub( /^[,\ "]*VARNAME[\ "]*:/, "" ); sub( /.+=\ */, "" ); print }
-#                 /^[,$' ' "]*VARNAME[$' ' "]*:/ { sub( /^[,$' ' "]*VARNAME[$' ' "]*:/, "" ); sub( /.+=$' ' */, "" ); print }
-#        aAWKpgm=$( cat <<EOF
-#/^[,\\x20 "]*VARNAME[\\x20 "]*:/ { sub( /^[,\x20 "]*VARNAME[\x20 "]*:/, "" ); sub( /.+=\x20 */, "" ); print }
-#EOF
-#)
-#        aAWKpgm="/^[, \"]*VARNAME[ \"]*:/ { sub( /^[, \"]*VARNAME[ \"]*:/, "" ); sub( /.+= */, \"\" ); print }"
-         aAWKpgm="/^[,{SP}\"]*${1}[{SP}\"]*:/ { sub( /^[,{SP}\"]*${1}[{SP}\"]*:/, \"\" ); sub( /.+={SP}*/, \"\" ); a=\$0; }; END { print a }"
-         aAWKpgm="${aAWKpgm//{SP\}/ }"
 
-#        echo -e   "\n-- aAWKpgm: ${aAWKpgm}";
-#        echo ""; printf "..aAWKpgm: %s\n" "$aAWKpgm"
-#        aAWKpgm="${aAWKpgm//VARNAME/$1}"
-#        aAWKpgm="${aAWKpgm//{SP\}/ }"
-#        echo -e "-- aAWKpgm: ${aAWKpgm}\n"; exit
-#                 printf "..aAWKpgm: %s\n" "$aAWKpgm"
-
-         aVar="$( cat "${aServerDir}/_config.js" | awk "${aAWKpgm}" | tr -d "'" | tr -d '"' )"   # .(51016.02.2).(51013.05.7)
-         echo "${aVar// /}"
-         }                                                                              # .(51016.02.1)
 function setServerAPI_URL() {                                                           # .(50911.04.1 RAM Write function Beg)
          aServerDir="$1"
          aClientDir="$2"
 #        nServerPort="$(    cat "${aServerDir}/_config.js" | awk '/^ *SERVER_PORT *=/           { sub( /.+= */, "" ); print }' | tr -d "'" | tr -d '"' )"   # .(51013.05.5 RAM Use _config.js, not .env)
 #        aServerHost="$(    cat "${aServerDir}/_config.js" | awk '/^ *SERVER_HOST *=/           { sub( /.+= */, "" ); print }' | tr -d "'" | tr -d '"' )"   # .(51013.05.6)
 #        aServerAPI_URL="$( cat "${aServerDir}/_config.js" | awk '/^[, "]*SERVER_API_URL[ "]*:/ { sub( /^[, "]*SERVER_API_URL[ "]*:/, "" ); sub( /.+= */, "" ); print }' | tr -d "'" | tr -d '"' )"   # .(51013.05.7)
-#        aServerAPI_URL="$( cat "${aServerDir}/_config.js" | awk '/^[, "]*SECURE_API_URL[ "]*:/ { sub( /^[, "]*SECURE_API_URL[ "]*:/, "" ); sub( /.+= */, "" ); print }' | tr -d "'" | tr -d '"' )"   # .(51013.05.7)
-         aServerAPI_URL="$( getFVar "SERVER_API_URL" )"
-         aLocation="$(      getFVar "SERVER_LOCATION" )"
-         aClientPath="$(    getFVar "CLIENT_PATH" )"
- if [ "${aLocation}" == "Remote" ]; then
-         aServerAPI_URL="$( getFVar "REMOTE_API_URL" )";
-         aClientPath="$( echo "${aServerAPI_URL}" | sed 's|^\(https\?://[^/]*\).*|\1|' | awk '{ sub( /:[0-9]+/, "" ); print }' )"  # .(51017.02.1)
- if [[ "${aClientPath}" =~ .[0-9]+. ]]; then aClientPath="${aClientPath}:${nPort}"; fi
-         fi
-
-#echo "  aLocation: '${aLocation}'";
-#echo "  aServerAPI_URL: '${aServerAPI_URL}'"; # exit
-
+         aServerAPI_URL="$( cat "${aServerDir}/_config.js" | awk '/^[, "]*SECURE_API_URL[ "]*:/ { sub( /^[, "]*SECURE_API_URL[ "]*:/, "" ); sub( /.+= */, "" ); print }' | tr -d "'" | tr -d '"' )"   # .(51013.05.7)
          nServerPort="$(   echo "${aServerAPI_URL}" | awk '{ sub( /.+:/, "" ); sub( /\/.+/, "" ); print }' )"                                               # .(51013.05.5 RAM Use _config.js, not .env)
-#        aServerHost="$(   echo "${aServerAPI_URL}" | awk '{ sub( /:[0-9]+/, "" ); print }' )"  ##.(51013.05.6).(51017.02.1)
-         aServerHost="$(   echo "${aServerAPI_URL}" | sed 's|^\(https\?://[^/]*\).*|\1|' | awk '{ sub( /:[0-9]+/, "" ); print }' )"  # .(51017.02.1)
-
-#        echo "  Setting SERVER_API_URL to: ${aServerAPI_URL// /} in ${aClientDir}/_config.js";   # exit
-#        echo "  Setting CLIENT_PATH    to: ${aServerHost}:${nPort} in ${aClientDir}/_config.js";   exit
-#        echo "  Setting CLIENT_PATH    to: ${aClientPath} in ${aClientDir}/_config.js";            exit
+         aServerHost="$(   echo "${aServerAPI_URL}" | awk '{ sub( /:.+/, "" ); print }' )"  # .(51013.05.6)
+#        echo "  Setting SERVER_API_URL to: ${aServerAPI_URL// /} in ${aClientDir}/_config.js"
 
    if [ ! -f "${aClientDir}/_config.js" ]; then                                             # .(51013.05.8 RAM Use _config.js, not config.js Beg)
          echo 'var CONFIG = '                              > "${aClientDir}/_config.js"
-         echo ' { "SERVER_API_URL": "{SERVER_API_URL}"'   >> "${aClientDir}/_config.js"     # If it doesn't exist
-         echo ' , "CLIENT_PATH":    "{CLIENT_PATH}"'      >> "${aClientDir}/_config.js"
-         echo '  }'                                       >> "${aClientDir}/_config.js"     # .(51013.05.8 End)
+         echo ' { "SERVER_API_URL": "{SERVER_API_URL}"'   >> "${aClientDir}/_config.js"
+         echo ' , "CLIENT_URL":     "{CLIENT_URL}"'       >> "${aClientDir}/_config.js"
+         echo '  }'                                       >> "${aClientDir}/_config.js"      # .(51013.05.8 End)
          fi
-#        aAWKpgm='/SERVER_API_URL:/ { print   "  SERVER_API_URL:   \"'${aServerHost// /}:${nServerPort}${aServerAPI_URL}'\","; next }
-#     /^[, "]*SERVER_API_URL[ "]*:/ { print ", \"SERVER_API_URL\": \"'${aServerHost}:${nPort}}'\""; next }
-#     /^[, "]*CLIENT_PATH[ "]*:/    { print ", \"CLIENT_PATH\":    \"'${aServerHost}:${nPort}'\""; next }
+#        aAWKpgm='/SERVER_API_URL:/ { print "  SERVER_API_URL: \"'${aServerHost// /}:${nServerPort}${aServerAPI_URL}'\","; next }
          aAWKpgm='
-/^[, "]*CLIENT_PATH[ "]*:/    { print ", \"CLIENT_PATH\":    \"'${aClientPath}'\""; next }
-/^[, "]*SERVER_API_URL[ "]*:/ { print ", \"SERVER_API_URL\": \"'${aServerAPI_URL}'\""; next }
+/^[, "]*CLIENT_PATH[ "]*:/    { print ", \"CLIENT_PATH\":    \"http://'${aHost}:${nPort}'\""; next }
+/^[, "]*SERVER_API_URL[ "]*:/ { print ", \"SERVER_API_URL\": \"'${aServerAPI_URL// /}'\""; next }
                   { print }'
          cat "${aClientDir}/_config.js" | awk "${aAWKpgm}" > "${aClientDir}/_config.tmp.js"
-
 #        echo -e "  aAWKpgm: \n${aAWKpgm}"; echo " _config.tmp.js: "; cat "${aClientDir}/_config.tmp.js"
 #        mv  "${aClientDir}/_config.tmp.js" "${aClientDir}/_config.js"
-#        echo  "   Setting SERVER_API_URL to: ${aServerHost// /}:${nServerPort}${aServerAPI_URL} in ${aClientDir}/_config.js"
-#        echo  "   Setting CLIENT_PATH    to: ${aServerHost}:${nPort} in ${aClientDir}/_config.js"
-         echo  "   Setting CLIENT_PATH    to: ${aClientPath} in ${aClientDir}/_config.js"
+#        echo  "  Setting SERVER_API_URL to: ${aServerHost// /}:${nServerPort}${aServerAPI_URL} in ${aClientDir}/_config.js"
+         echo  "   Setting CLIENT_PATH    to: http://${aHost}:${nPort} in ${aClientDir}/_config.js"
          echo  "       and SERVER_API_URL to: ${aServerAPI_URL// /} "
-#        exit
          }                                                                              # .(50911.04.1 End)
 # ---------------------------------------------------
 function runServer() {
@@ -184,8 +126,6 @@ function runServer() {
 #   chkPort ${nPort}   # Kill any existing processes on our ports
     getAppName $1 $2;  # echo "  Server nPort: ${nPort} for ${aAppName}"; return
 #   echo -e "\n  runServer[1] Client nPort: ${nPort} for ${aAppName}";                  # .(50113.05.3 RAM ??? To get the client folder)
-
- if [ -f "_config.js" ]; then cp -p "_config.js" "${aServer}/${aAppName}/_config.js";fi # .(51017.04.1)
 
 #   Install dependencies if needed
     bDoit="0"; if [ "${3:0:2}" == "-d" ]; then bDoit="1"; fi
@@ -227,14 +167,11 @@ function runClient() {
     else
     nPort="${nUseThisClientPort}"
     fi                                           # .(50113.05.2 End)
-
 #   chkPort ${nPort}   # Kill any existing processes on our ports
 #   getAppName $1 $2;  # echo -e "  Client nPort: ${nPort} for ${aAppName}\n";          # .(50113.05.3 RAM ??? Why was this here a 2nd time)
 #   echo "  runClient[2] \$2: '$2', nPort: '${nPort}', aServerName: '${aServerName}'"
 
 #   setServerAPI_URL "${aServer}/${aServerName}" "${aClient}/${aAppName}"; # exit       # .(50911.04.2 RAM Use it)
-
- if [ -f "_config.js" ]; then cp -p "_config.js" "${aClient}/${aAppName}/_config.js";fi # .(51017.04.2)
 
 #   Install dependencies if needed
     bDoit="0"; if [ "${3:0:2}" == "-d" ]; then bDoit="1"; fi
@@ -256,18 +193,14 @@ function runClient() {
 
 # echo "  live-server ${aQuiet}--port=${nPort} --open=${aAppName}/ --watch=.,../${aServer}/${aServerName}"    # .(50926.05.2)
 #         live-server ${aQuiet}--port=${nPort} --open=${aAppName}/ --watch=.,../${aServer}/${aServerName} &   # .(50926.05.2)
-# echo "  live-server ${aQuiet}--port=${nPort} --open=${aClient}/${aAppName} --watch=${aClient}/${aAppName},${aServer}/${aServerName}"    # .(50926.05.2)
-#         live-server ${aQuiet}--port=${nPort} --open=${aClient}/${aAppName} --watch=${aClient}/${aAppName},${aServer}/${aServerName} &   # .(50926.05.2)
-  echo "  live-server ${aQuiet}--port=${nPort} --host=0.0.0.0 --open=${aClient}/${aAppName} --watch=${aClient}/${aAppName},${aServer}/${aServerName}"    # .(50926.05.2)
-          live-server ${aQuiet}--port=${nPort} --host=0.0.0.0 --open=${aClient}/${aAppName} --watch=${aClient}/${aAppName},${aServer}/${aServerName} &   # .(50926.05.2)
+  echo "  live-server ${aQuiet}--port=${nPort} --open=${aClient}/${aAppName} --watch=${aClient}/${aAppName},${aServer}/${aServerName}"    # .(50926.05.2)
+          live-server ${aQuiet}--port=${nPort} --open=${aClient}/${aAppName} --watch=${aClient}/${aAppName},${aServer}/${aServerName} &   # .(50926.05.2)
 
     CLIENT_PID=$!
-    echo ""
 #   echo "  Client is running in: $(pwd)/index.html"
 #   echo "  Client is running in: $(pwd)/${aAppName}/index.html"
     echo "  Client is running in: $(pwd)/${aClient}/${aAppName}/index.html"
-#   echo "  Client is running at: http://${aHost}:${nPort}"
-    echo "  Client is running at: ${aClientPath}/${aClient}/${aAppName}"
+    echo "  Client is running at: http://${aHost}:${nPort}"
     cd ../..
     }
 # ----------------------------------------------------------------------------------------------

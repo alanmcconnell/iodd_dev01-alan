@@ -188,10 +188,10 @@
 
 //          console.log( `aAPI_URL: '${aAPI_URL}'`)
             aAPI_URL      =  aAPI_URL ? aAPI_URL.replace( /{PORT}/, nPort ) : `/api2/${nPort}`
-            aRemote_Host  =  aRemote_Host.replace( /{PORT}/, nPort )                    // .(50707.02.x RAM Try this)
+            aRemote_Host  =  aRemote_Host ? aRemote_Host.replace( /{PORT}/, nPort ) : null                    // .(50707.02.x RAM Try this)
 
      // Extract just the path portion for Express routes
-        var aAPI_Path     =  new URL(aAPI_URL).pathname                                 // .(50918.05.1 CAI Create API_Path as /api2/)
+        var aAPI_Path     =  aAPI_URL.startsWith('http') ? new URL(aAPI_URL).pathname : aAPI_URL                                 // .(50918.05.1 CAI Create API_Path as /api2/)
 //   global.aAPI_Host     =  aAPI_URL                                                   //#.(50918.05.2 CAI Not full URL)
      global.aAPI_Host     =  aAPI_Path                                                  // .(50918.05.2 CAI Use API_Path as /api2)
 //     var  aAPI_Host     = `${aRemote_Host}${aAPI_URL}`                                //#.(50707.02.5 RAM Wrong) 
@@ -230,18 +230,20 @@
        // Configure CORS
        const corsOrigins = [ process.fvaRs.CLIENT_HOST, process.fvaRs.CLIENT_HOST.replace( /\/\/localhost/, "//127.0.0.1" ) // .(51013.02.10 ) RAM Set CORS to      allow the IODD Client pages on a different port)
                            , process.fvaRs.SECURE_PATH, process.fvaRs.SECURE_PATH.replace( /\/\/localhost/, "//127.0.0.1" ) // .(51013.02.11) RAM Set CORS to also allow the SecureAccess Client pages)
+                           , 'http://127.0.0.1:56785', 'http://localhost:56785' // Add common development origins
+                           , 'http://127.0.0.1:5500', 'http://localhost:5500' // Add Live Server default ports
+                           , 'http://127.0.0.1:54332', 'http://localhost:54332' // Add client port 54332
                              ];
        console.log('CORS Origins:', JSON.stringify( corsOrigins, '', 2 ));
        pApp.use(cors({
-           origin: corsOrigins,   
+           origin: true,   
            credentials: true,
-           methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-           allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+           methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
        }));
        
        // Handle preflight requests
        pApp.options('*', cors({
-           origin: corsOrigins,
+           origin: true,
            credentials: true
        }));
        
@@ -305,6 +307,12 @@ this.setRoutes = async function( bQuiet, aAPI_Host ) {                          
             this.UserByEmail_getRoute( )            // Search user by email
             this.Contact_postRoute( )               // Contact form submission
             this.ContactMail_getRoute( )            // Get ContactMail data
+            this.ContactMail_putRoute( )            // Update ContactMail record
+            this.ContactMail_deleteRoute( )         // Delete ContactMail record
+            this.ContactMail_sendEmailRoute( )      // Send email response
+            
+            // Add credentials route for PKCE token handling
+            this.Credentials_getRoute( )
 
          }; // eof setRoutes                                                            // .(30406.02.3 End)
 //--------  ------------------  =  --------------------------------- ------------------
@@ -595,9 +603,49 @@ this.Login_postRoute = function( ) {    // Send back JSON if found, otherwise se
        pRes.cookie('auth_token', jwtToken, {
            httpOnly: true,
            secure: false,
-           sameSite: 'none',
+           sameSite: 'lax',
            maxAge: 24 * 60 * 60 * 1000 // 24 hours
        });
+       
+       // Create app_token using JWT-Tokens-Server.js
+       try {
+           console.log('Creating app_token for user:', mRecs1[0].Email);
+           const { acmJWTCreate } = await import('../JWT-Tokens-Server.js');
+           
+           // Get role name from RoleId
+           let roleName = 'Member';
+           if (mRecs1[0].RoleId) {
+               const roleSQL = `SELECT Name FROM roles WHERE Id = ${mRecs1[0].RoleId} AND Active = 'Yes' LIMIT 1`;
+               const roleResult = await getData(pDB, roleSQL, aRoute);
+               if (roleResult && roleResult.length > 0 && roleResult[0] !== 'error') {
+                   roleName = roleResult[0].Name;
+               }
+           }
+           
+           const appTokenPayload = {
+               user_id: mRecs1[0].MemberNo,
+               user_name: `${mRecs1[0].FirstName || ''} ${mRecs1[0].LastName || ''}`.trim(),
+               user_email: mRecs1[0].Email,
+               user_role: roleName
+           };
+           
+           console.log('App token payload:', appTokenPayload);
+           const appToken = acmJWTCreate(appTokenPayload);
+           console.log('App token created successfully, length:', appToken.length);
+           
+           // Set app_token cookie
+           pRes.cookie('app_token', appToken, {
+               httpOnly: true,
+               secure: false,
+               sameSite: 'lax',
+               maxAge: 24 * 60 * 60 * 1000 // 24 hours
+           });
+           
+           console.log('App token cookie set');
+           
+       } catch (tokenError) {
+           console.error('App token creation failed:', tokenError);
+       }
 
                                sndJSON( pRes, JSON.stringify( { login: mRecs1, token_set: true } ) , 'login' )               // .(30404.02.7)
                          }
@@ -798,6 +846,42 @@ this.PKCEAuth_getRoute = async function() {
     sayMsg('delete', `${global.aAPI_Host}/role`);
     sayMsg('get', `${global.aAPI_Host}/role-usage`);
     sayMsg('post', `${global.aAPI_Host}/nextid`);
+    
+    // Add JWT token endpoints
+    const { acmJWTCreate, acmJWTPost, acmJWTFetch, acmJWTVerify } = await import('../JWT-Tokens-Server.js');
+    
+    pApp.post(`${global.aAPI_Host}/jwt/create`, async (req, res) => {
+        try {
+            const token = acmJWTCreate(req.body.payload || {});
+            res.json({ token });
+        } catch (error) {
+            res.status(400).json({ error: error.message });
+        }
+    });
+    
+    pApp.post(`${global.aAPI_Host}/jwt/update`, async (req, res) => {
+        try {
+            const token = req.headers.authorization?.replace('Bearer ', '');
+            const newToken = acmJWTPost(token, req.body.key, req.body.value);
+            res.json({ token: newToken });
+        } catch (error) {
+            res.status(400).json({ error: error.message });
+        }
+    });
+    
+    pApp.get(`${global.aAPI_Host}/jwt/fetch/:key`, async (req, res) => {
+        try {
+            const token = req.headers.authorization?.replace('Bearer ', '');
+            const value = acmJWTFetch(token, req.params.key);
+            res.json({ value });
+        } catch (error) {
+            res.status(400).json({ error: error.message });
+        }
+    });
+    
+    sayMsg('post', `${global.aAPI_Host}/jwt/create`);
+    sayMsg('post', `${global.aAPI_Host}/jwt/update`);
+    sayMsg('get', `${global.aAPI_Host}/jwt/fetch/:key`);
 }; // eof PKCEAuth_getRoute
 
 //--------  ------------------  =  --------------------------------- ------------------
@@ -839,11 +923,13 @@ this.Members_getRoute = function( ) {
 
         var pValidArgs = { 
             email: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/,
-            id: /[0-9]+/
+            id: /[0-9]+/,
+            MemberNo: /[0-9]+/
         }
         var fmtSQL = pArgs => {
             if (pArgs.email) return `SELECT * FROM members WHERE Email = '${pArgs.email}'`;
             if (pArgs.id) return `SELECT * FROM members WHERE Id = ${pArgs.id}`;
+            if (pArgs.MemberNo) return `SELECT * FROM members WHERE MemberNo = ${pArgs.MemberNo}`;
             return `SELECT * FROM members`;
         }
 
@@ -1682,10 +1768,169 @@ this.Contact_postRoute = function( ) {
 this.ContactMail_getRoute = function() {
 
             setRoute( pApp, 'get', '/contactmail', JSON_getRoute_Handler
-            , ( pArgs ) => `SELECT Id, ContactName, ContactEmail, DateReceived, Question, MemberNo, Answer FROM ContactMail ORDER BY DateReceived DESC`
+            , ( pArgs ) => `SELECT Id, ContactName, ContactEmail, DateReceived, Question, Status, MemberNo, Answer FROM ContactMail ORDER BY DateReceived DESC`
             , { }
                        );
          }; // eof ContactMail_getRoute
+
+this.ContactMail_putRoute = function() {
+
+       var  pValidArgs = {
+            id: /[0-9]+/,
+            Answer: /.*/,
+            DateRespond: /.*/,
+            MemberNo: /[0-9]+/,
+            Status: /.*/
+        }
+
+            setRoute( pApp, 'put', '/contactmail/:id', ContactMail_putRoute_Handler, pValidArgs )
+
+     async  function  ContactMail_putRoute_Handler( aMethod, pReq, pRes, aRoute ) {
+
+                               logIP(   pReq, pDB, `PUT Route, '/contactmail'` )
+                               sayMsg(  pReq, aMethod, aRoute )
+
+       var  id         =       pReq.params.id
+       var  updateFields = []
+       
+       if (pReq.body.Answer !== undefined) {
+           updateFields.push(`Answer = '${pReq.body.Answer.replace(/'/g, "''")}'`)
+       }
+       if (pReq.body.DateRespond) {
+           updateFields.push(`DateRespond = '${pReq.body.DateRespond}'`)
+       }
+       if (pReq.body.MemberNo) {
+           updateFields.push(`MemberNo = ${pReq.body.MemberNo}`)
+       }
+       if (pReq.body.Status) {
+           updateFields.push(`Status = '${pReq.body.Status}'`)
+       }
+       
+       if (updateFields.length === 0) {
+           return sndErr(pRes, 'No fields to update')
+       }
+
+       var  aSQL       = `UPDATE ContactMail SET ${updateFields.join(', ')} WHERE Id = ${id}`
+       var  mRecs      = await putData( pDB, aSQL, aRoute );
+
+        if (mRecs[0] == 'error') {
+                               sndErr(  pRes, mRecs[1] ); return
+        }
+
+                               sndJSON( pRes, JSON.stringify( { success: true, updated: mRecs[2].affectedRows } ), aRoute )
+                               sayMsg( 'Done', "ContactMail_putRoute_Handler" )
+
+         }; // eof ContactMail_putRoute_Handler
+         }; // eof ContactMail_putRoute
+
+this.ContactMail_deleteRoute = function() {
+
+       var  pValidArgs = { id: /[0-9]+/ }
+
+            setRoute( pApp, 'delete', '/contactmail/:id', ContactMail_deleteRoute_Handler, pValidArgs )
+
+     async  function  ContactMail_deleteRoute_Handler( aMethod, pReq, pRes, aRoute ) {
+
+                               logIP(   pReq, pDB, `DELETE Route, '/contactmail'` )
+                               sayMsg(  pReq, aMethod, aRoute )
+
+       var  id         =       pReq.params.id
+       var  aSQL       = `DELETE FROM ContactMail WHERE Id = ${id}`
+       var  mRecs      = await putData( pDB, aSQL, aRoute );
+
+        if (mRecs[0] == 'error') {
+                               sndErr(  pRes, mRecs[1] ); return
+        }
+
+                               sndJSON( pRes, JSON.stringify( { success: true, deleted: mRecs[2].affectedRows } ), aRoute )
+                               sayMsg( 'Done', "ContactMail_deleteRoute_Handler" )
+
+         }; // eof ContactMail_deleteRoute_Handler
+         }; // eof ContactMail_deleteRoute
+
+this.ContactMail_sendEmailRoute = function() {
+
+       var  pValidArgs = {
+            id: /[0-9]+/,
+            contactName: /.+/,
+            contactEmail: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/,
+            question: /.+/,
+            answer: /.+/,
+            memberName: /.+/
+        }
+
+            setRoute( pApp, 'post', '/contactmail/:id/send-email', ContactMail_sendEmailRoute_Handler, pValidArgs )
+
+     async  function  ContactMail_sendEmailRoute_Handler( aMethod, pReq, pRes, aRoute ) {
+
+                               logIP(   pReq, pDB, `POST Route, '/contactmail/send-email'` )
+                               sayMsg(  pReq, aMethod, aRoute )
+
+       var  { contactName, contactEmail, question, answer } = pReq.body
+       var  emailStatus = 'Failed'
+       var  memberName = 'IODD Member'
+
+        try {
+            // Get member name from database using memberId from request
+            const memberId = pReq.body.memberId || 1
+            
+            if (memberId && memberId !== 1) {
+                const memberSQL = `SELECT FirstName, LastName FROM members WHERE MemberNo = ${memberId} LIMIT 1`
+                const memberResult = await getData( pDB, memberSQL, aRoute )
+                
+                if (memberResult && Array.isArray(memberResult) && memberResult.length > 0 && memberResult[0] !== 'error') {
+                    const member = memberResult[0]
+                    memberName = `${member.FirstName || ''} ${member.LastName || ''}`.trim() || 'IODD Member'
+                }
+            }
+            
+            const nodemailer = await import('nodemailer')
+            
+            const transporter = nodemailer.default.createTransport({
+                host: process.env.EMAIL_HOST,
+                port: process.env.EMAIL_PORT,
+                secure: false,
+                auth: {
+                    user: process.env.EMAIL_USER,
+                    pass: process.env.EMAIL_PASS
+                },
+                tls: {
+                    rejectUnauthorized: false
+                }
+            })
+            
+            const emailBody = `Dear ${contactName},\n\nThank you for your question to IODD.\n\nYour Question:\n${question}\n\nOur Response:\n${answer}\n\nBest regards,\n${memberName}\nIODD Member\nInstitute of Database Developers`
+            
+            await transporter.sendMail({
+                from: process.env.EMAIL_USER,
+                to: contactEmail,
+                subject: 'IODD Question - Response',
+                text: emailBody
+            })
+            
+            emailStatus = 'Sent'
+            
+        } catch (emailError) {
+            console.error('Email sending failed:', emailError)
+        }
+
+                               sndJSON( pRes, JSON.stringify( { success: emailStatus === 'Sent', emailStatus } ), aRoute )
+                               sayMsg( 'Done', "ContactMail_sendEmailRoute_Handler" )
+
+         }; // eof ContactMail_sendEmailRoute_Handler
+         }; // eof ContactMail_sendEmailRoute
+//--------  ------------------  =  --------------------------------- ------------------
+
+this.Credentials_getRoute = function() {
+    // Serve credentials.html at /client3/c32_iodd-app/credentials path
+    pApp.get('/client3/c32_iodd-app/credentials', (req, res) => {
+        const credentialsPath = path.resolve(__dirname, '../../../client3/c32_iodd-app/credentials.html');
+        res.sendFile(credentialsPath);
+    });
+    
+    sayMsg('get', '/client3/c32_iodd-app/credentials');
+}; // eof Credentials_getRoute
+
 //--------  ------------------  =  --------------------------------- ------------------
 //=====================================================================================
 

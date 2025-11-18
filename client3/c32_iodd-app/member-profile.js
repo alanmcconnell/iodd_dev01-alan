@@ -1,5 +1,4 @@
-// Global variable to store member ID
-  window.gMemberId = null;
+
      var SERVER_API_URL = window.fvaRs.SERVER_API_URL;                               // .(51013.01.5)
 
 class MemberProfileClient {
@@ -12,42 +11,29 @@ class MemberProfileClient {
     }
 
     init() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const email = urlParams.get('email');
-        if (email) {
-            console.log(`Member Profile Client initialized for email: ${email}`);
-            this.loadMemberByEmail(email);
-        }
+        this.loadUserFromToken();
         this.setupEventListeners();
         console.log('Member Profile Client initialized');
     }
 
-    async loadMemberByEmail(email) {
+    async loadUserFromToken() {
         try {
-            console.log('Fetching member data for email:', email);
-//          const response = await fetch( `http://localhost:3004/api/members?email=${encodeURIComponent(email)}`);  //#.(51013.01.11)
-            const response = await fetch(         `${SERVER_API_URL}/members?email=${encodeURIComponent(email)}`);  // .(51013.01.11)
-            const data = await response.json();
+            // Get user info from app_token
+            const userName = await acmJWTFetch('user_name') || 'IODD Member';
+            const userEmail = await acmJWTFetch('user_email') || 'member@iodd.com';
             
-            if (response.ok && data.members && data.members.length > 0) {
-                const member = data.members[0];
-                this.memberNo = member.Id || member.MemberNo;
-                window.gMemberId = member.Id;
-                document.getElementById('userName').textContent = member.FullName || `${member.FirstName} ${member.LastName}`;
-                document.getElementById('userEmail').textContent = member.Email;
-                console.log('Member data loaded:', member);
-                console.log('Global gMemberId set to:', window.gMemberId);
-            } else {
-                console.error('Member not found for email:', email);
-                document.getElementById('userName').textContent = 'Member Not Found';
-                document.getElementById('userEmail').textContent = email;
-            }
+            document.getElementById('userName').textContent = userName;
+            document.getElementById('userEmail').textContent = userEmail;
         } catch (error) {
-            console.error('Error loading member data:', error);
-            document.getElementById('userName').textContent = 'Error Loading Member';
-            document.getElementById('userEmail').textContent = email;
+            // Fallback to defaults if JWT fetch fails
+            document.getElementById('userName').textContent = 'IODD Member';
+            document.getElementById('userEmail').textContent = 'member@iodd.com';
         }
     }
+
+
+
+
 
     setupEventListeners() {
         // Main menu items (expandable sections)
@@ -330,32 +316,16 @@ class MemberProfileClient {
         return null;
     }
 
-    // Method to get member bio using gMemberId
-    async getMemberBio() {
-        if (!window.gMemberId) {
-            console.error('gMemberId not set');
-            return null;
-        }
-        
-        try {
-            const response = await fetch(`${SERVER_API_URL}/members?id=${window.gMemberId}`);
-            const data = await response.json();
-            
-            if (response.ok && data.members && data.members.length > 0) {
-                return data.members[0].Bio;
-            }
-            return null;
-        } catch (error) {
-            console.error('Error fetching member bio:', error);
-            return null;
-        }
-    }
+
 }
 
-// Initialize the application when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    window.memberProfile = new MemberProfileClient();
-    console.log('Member Profile application started');
+// Initialize the application when page is fully loaded
+window.addEventListener('load', () => {
+    // Add small delay to ensure URL is fully processed
+    setTimeout(() => {
+        window.memberProfile = new MemberProfileClient();
+        console.log('Member Profile application started');
+    }, 100);
 });
 
 // Export for use in other scripts if needed

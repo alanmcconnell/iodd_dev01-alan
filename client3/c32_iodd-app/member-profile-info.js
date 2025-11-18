@@ -18,18 +18,34 @@ class MemberProfileInfo {
     }
     
     async waitForAuth() {
-        // Wait for global auth to be initialized
+        // Wait for JWT auth to be ready
         let attempts = 0;
         let delay = 50;
-        while (attempts < 10 && (!window.gRole || !window.gMemberId)) {
+        let userRole, userNo;
+        
+        while (attempts < 10) {
+            try {
+                userRole = await acmJWTFetch('user_role');
+                userNo = await acmJWTFetch('user_no');
+                if (userRole && userNo) break;
+            } catch (error) {
+                // Fallback to global variables
+                if (window.gRole && window.gMemberId) {
+                    userRole = window.gRole;
+                    userNo = window.gMemberId;
+                    break;
+                }
+            }
+            
             await new Promise(resolve => setTimeout(() => resolve(), delay));
             attempts++;
             delay = Math.min(delay * 1.5, 500);
         }
-        if (window.gRole && window.gMemberId) {
-            console.log('Auth ready');
+        
+        if (userRole && userNo) {
+            console.log('Auth ready - Role:', userRole, 'UserNo:', userNo);
         } else {
-            console.warn('Auth timeout');
+            console.warn('Auth timeout - no role/user found');
         }
     }
 
@@ -156,9 +172,9 @@ class MemberProfileInfo {
         });
     }
 
-    selectMember(member, event) {
+    async selectMember(member, event) {
         // Check record access permissions
-        const accessCheck = RolePermissions.checkRecordAccess(member);
+        const accessCheck = await RolePermissions.checkRecordAccess(member);
         if (!accessCheck.allowed) {
             this.showMessage(accessCheck.message, 'error');
             return;
@@ -265,8 +281,14 @@ class MemberProfileInfo {
             }
             
             // Check role permissions for editing
-            const userRole = window.gRole || window.parent?.gRole || 'Member';
-            const currentUserId = window.gMemberId || window.parent?.gMemberId;
+            let userRole, currentUserId;
+            try {
+                userRole = await acmJWTFetch('user_role') || window.gRole || window.parent?.gRole || 'Member';
+                currentUserId = await acmJWTFetch('user_no') || window.gMemberId || window.parent?.gMemberId;
+            } catch (error) {
+                userRole = window.gRole || window.parent?.gRole || 'Member';
+                currentUserId = window.gMemberId || window.parent?.gMemberId;
+            }
             
             if (memberId !== 0 && !RolePermissions.canEditRecord(userRole, currentUserId, memberId)) {
                 this.showMessage('You do not have permission to edit this record', 'error');
@@ -544,8 +566,20 @@ class MemberProfileInfo {
         }
 
         // Check role permissions for deletion
-        const userRole = window.gRole || window.parent?.gRole || 'Member';
-        const currentUserId = window.gMemberId || window.parent?.gMemberId;
+        let userRole, currentUserId;
+        try {
+            userRole = await acmJWTFetch('user_role') || window.gRole || window.parent?.gRole || 'Member';
+            currentUserId = await acmJWTFetch('user_no') || window.gMemberId || window.parent?.gMemberId;
+        } catch (error) {
+            userRole = window.gRole || window.parent?.gRole || 'Member';
+            currentUserId = window.gMemberId || window.parent?.gMemberId;
+        }
+        
+        // Only Admin can delete records
+        if (userRole !== 'Admin') {
+            this.showMessage('You do not have permission to delete records', 'error');
+            return;
+        }
         
         if (!RolePermissions.canEditRecord(userRole, currentUserId, this.selectedMemberId)) {
             this.showMessage('You do not have permission to delete this record', 'error');

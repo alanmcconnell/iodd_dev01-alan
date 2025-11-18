@@ -3,37 +3,26 @@
  * Endpoint to get current user info from JWT token
  */
 
-import { verifyToken } from '../global-token-functions.js';
-
 async function userInfoHandler(req, res) {
     try {
-        const authToken = req.cookies.auth_token;
+        const appToken = req.cookies.app_token;
         
-        if (!authToken) {
+        if (!appToken) {
             return res.status(401).json({
                 success: false,
                 message: 'Not authenticated'
             });
         }
         
-        const payload = verifyToken(authToken);
+        // Decode JWT payload (simple decode without verification for app_token)
+        const payload = JSON.parse(Buffer.from(appToken.split('.')[1], 'base64').toString());
         
-        if (!payload) {
-            return res.status(401).json({
-                success: false,
-                message: 'Invalid token'
-            });
-        }
-        
-        // Return user info without sensitive data
+        // Return user info from app_token
         return res.json({
-            success: true,
-            user: {
-                user_id: payload.user_id,
-                username: payload.username,
-                email: payload.email,
-                role: payload.role
-            }
+            user_id: payload.user_id,
+            user_name: payload.user_name,
+            user_email: payload.user_email,
+            user_role: payload.user_role
         });
         
     } catch (error) {

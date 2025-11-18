@@ -37,6 +37,11 @@ class MemberListClient {
     async getMembersInfoAlt() {
         return await this.fetchData('/members');
     }
+
+    async getMembersInfoSimple() {
+        // Fallback to basic members endpoint without view
+        return await this.fetchData('/members');
+    }
 }
 
 // UI Functions
@@ -157,19 +162,75 @@ const client = new MemberListClient();
 async function loadMembersList() {
     try {
         showLoading();
-        // Try the view first, fallback to members endpoint
         let data;
+        
+        // Try multiple endpoints in order of preference
         try {
+            console.log('Trying webpage_members_info_view endpoint...');
             data = await client.getMembersInfo();
         } catch (viewError) {
-            console.log('View endpoint failed, trying members endpoint');
-            data = await client.getMembersInfoAlt();
+            console.log('View endpoint failed, trying basic members endpoint:', viewError.message);
+            try {
+                data = await client.getMembersInfoAlt();
+            } catch (membersError) {
+                console.log('Members endpoint also failed, trying simple fallback:', membersError.message);
+                data = await client.getMembersInfoSimple();
+            }
         }
         displayMembersTable(data);
     } catch (error) {
+        console.error('All endpoints failed:', error);
         showError(error);
     }
 }
 
+// Test server connection first
+async function testServerConnection() {
+    try {
+        console.log('Testing server connection to:', window.fvaRs.SERVER_API_URL);
+        const response = await fetch(`${window.fvaRs.SERVER_API_URL}/`);
+        console.log('Server response status:', response.status);
+        const text = await response.text();
+        console.log('Server response:', text.substring(0, 200));
+        return true;
+    } catch (error) {
+        console.error('Server connection failed:', error);
+        showServerUnavailableMessage();
+        return false;
+    }
+}
+
+function showServerUnavailableMessage() {
+    const container = document.getElementById('data-display');
+    container.innerHTML = `
+        <div style="text-align: center; padding: 40px; color: #666;">
+            <h3>Server Currently Unavailable</h3>
+            <p>The IODD API server is not running or not accessible.</p>
+            <p>To view member information, please:</p>
+            <ol style="text-align: left; display: inline-block; margin-top: 20px;">
+                <li>Start the server by running: <code>npm start</code> in the server directory</li>
+                <li>Or contact the administrator if this is a production environment</li>
+            </ol>
+            <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                Retry Connection
+            </button>
+        </div>
+    `;
+}
+
 // Load data when page loads
-document.addEventListener('DOMContentLoaded', loadMembersList);
+document.addEventListener('DOMContentLoaded', async () => {
+    const serverOk = await testServerConnection();
+    if (serverOk) {
+        loadMembersList();
+    }
+});
+
+// Add retry functionality
+window.retryConnection = async function() {
+    showLoading();
+    const serverOk = await testServerConnection();
+    if (serverOk) {
+        loadMembersList();
+    }
+};

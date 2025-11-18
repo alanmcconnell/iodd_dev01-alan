@@ -1,16 +1,15 @@
 var _CONFIG =
 { "IODD_VERSION":   "2.02"
-, "CLIENT_PATH":    "http://localhost:54332/client3/c32_iodd-app"
-, "SERVER_API_URL": "http://localhost:54382/api2"
-, "SECURE_PATH":    "http://localhost:54333"
-, "SECURE_API_URL": "http://localhost:54383/api"
+, "CLIENT_PATH":    "http://92.112.184.206:54332"
+, "SERVER_API_URL": "http://92.112.184.206:54382/api2"
+, "SECURE_PATH":    "http://localhost:55301"
+, "SECURE_API_URL": "http://localhost:55351/api"
 //"REMOTE_API_URL": "https://iodd.com/api2"
-, "REMOTE_API_URL": "http://localhost:54382/api"
-, "SERVER_LOCATION":"Local"
-, "SECURE_APP_KEY": "JRvaCBEJcy7CDlHxMDyZ"
+, "REMOTE_API_URL": "http://92.112.184.206:54382/api2"
+, "SERVER_LOCATION":"Remote"
 
 //"LOGIN_PAGE":     "{SECURE_PATH}/login_client.html"                                   //#.(51015.02.3)
-, "LOGIN_PAGE":     "{SECURE_PATH}/client/c01_client-first-app/index.html"       // .(51015.02.3 RAM Needs full path for Live Server)
+, "LOGIN_PAGE":     "{SECURE_PATH}/client/c01_client-first-app/login_client.html"       // .(51015.02.3 RAM Needs full path for Live Server)
 , "LOGIN_SUCCESS":  "{CLIENT_PATH}/member-profile.html"
 , "LOGIN_FAILURE":  "{CLIENT_PATH}/index.html"
    }

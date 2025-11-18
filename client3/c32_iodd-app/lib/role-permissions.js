@@ -39,11 +39,26 @@ class RolePermissions {
     }
     
     // UI Control Functions
-    static applyRoleBasedUI() {
-        const userRole      = GlobalAuth?.getRole()     || window.gRole;
-        const currentUserId = GlobalAuth?.getMemberId() || window.gMemberId;
+    static async applyRoleBasedUI() {
+        let userRole, currentUserId;
         
-              console.log('applyRoleBasedUI - Role:', userRole, 'UserId:', currentUserId);
+        // Try JWT first
+        try {
+            userRole = await acmJWTFetch('user_role');
+            currentUserId = await acmJWTFetch('user_no');
+            console.log('JWT SUCCESS - Role:', userRole, 'UserId:', currentUserId);
+        } catch (error) {
+            console.log('JWT fetch failed in applyRoleBasedUI:', error.message);
+            userRole = (typeof GlobalAuth !== 'undefined' ? GlobalAuth?.getRole() : null) || window.gRole || window.parent?.gRole;
+            currentUserId = (typeof GlobalAuth !== 'undefined' ? GlobalAuth?.getMemberId() : null) || window.gMemberId || window.parent?.gMemberId;
+            console.log('FALLBACK - Role:', userRole, 'UserId:', currentUserId);
+        }
+        
+        console.log('=== ROLE PERMISSIONS DEBUG ===');
+        console.log('Final Role:', userRole, 'Final UserId:', currentUserId);
+        console.log('GlobalAuth available:', typeof GlobalAuth !== 'undefined');
+        console.log('window.gRole:', window.gRole);
+        console.log('window.gMemberId:', window.gMemberId);
           
         // Get buttons
         const addBtn    = document.getElementById('addBtn');
@@ -92,9 +107,17 @@ class RolePermissions {
           }
     }
     
-    static applyFormPermissions(member) {
-        const userRole      = GlobalAuth?.getRole()     || window.gRole;
-        const currentUserId = GlobalAuth?.getMemberId() || window.gMemberId;
+    static async applyFormPermissions(member) {
+        let userRole, currentUserId;
+        
+        try {
+            userRole = await acmJWTFetch('user_role');
+            currentUserId = await acmJWTFetch('user_no');
+        } catch (error) {
+            console.log('JWT fetch failed in applyFormPermissions, using fallback');
+            userRole = (typeof GlobalAuth !== 'undefined' ? GlobalAuth?.getRole() : null) || window.gRole || window.parent?.gRole;
+            currentUserId = (typeof GlobalAuth !== 'undefined' ? GlobalAuth?.getMemberId() : null) || window.gMemberId || window.parent?.gMemberId;
+        }
         const targetUserId  = member?.MemberNo;
         
               console.log('applyFormPermissions - Role:', userRole, 'CurrentUserId:', currentUserId, 'TargetUserId:', targetUserId);
@@ -161,9 +184,16 @@ class RolePermissions {
           if (cancelBtn) cancelBtn.style.display = buttonVisibility.cancel ? 'inline-block' : 'none';
     }
     
-    static checkRecordAccess(member) {
-        const userRole = GlobalAuth?.getRole() || window.gRole;
-        const currentUserId = GlobalAuth?.getMemberId() || window.gMemberId;
+    static async checkRecordAccess(member) {
+        let userRole, currentUserId;
+        try {
+            userRole = await acmJWTFetch('user_role');
+            currentUserId = await acmJWTFetch('user_no');
+        } catch (error) {
+            console.log('JWT fetch failed in checkRecordAccess, using fallback');
+            userRole = (typeof GlobalAuth !== 'undefined' ? GlobalAuth?.getRole() : null) || window.gRole || window.parent?.gRole;
+            currentUserId = (typeof GlobalAuth !== 'undefined' ? GlobalAuth?.getMemberId() : null) || window.gMemberId || window.parent?.gMemberId;
+        }
         const effectiveRole = userRole || 'Member';
         
         // Members can view all records, just can't edit others
@@ -184,13 +214,15 @@ class RolePermissions {
     }
     
     // Set test role for immediate testing
-    static setTestRole(role) {
-              window.gRole = role;
-              window.gRoleId = role === 'Admin' ? 4 : role === 'Editor' ? 2 : 1;
+    static async setTestRole(role) {
+              await acmJWTPost('user_role', role);
               console.log('Test role set to:', role);
-         this.applyRoleBasedUI();
+         await this.applyRoleBasedUI();
     }
 }
 
+// Make RolePermissions globally available
+window.RolePermissions = RolePermissions;
+
 // Make test function globally available
-   window.setTestRole = function(role) {  RolePermissions.setTestRole(role); };
+window.setTestRole = async function(role) { await RolePermissions.setTestRole(role); };

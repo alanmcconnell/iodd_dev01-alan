@@ -2,10 +2,10 @@ var _CONFIG =
 { "IODD_VERSION":   "2.02"
 , "CLIENT_PATH":    "http://localhost:54332/client3/c32_iodd-app"
 , "SERVER_API_URL": "http://localhost:54382/api2"
-, "SECURE_PATH":    "http://localhost:55301"
-, "SECURE_API_URL": "http://localhost:55351/api"
-, "REMOTE_HOST":    "https://iodd.com"
-//"REMOTE_HOST":    "https://92.112.184.206"
+, "SECURE_PATH":    "http://localhost:54333"
+, "SECURE_API_URL": "http://localhost:54383/api"
+//"REMOTE_API_URL": "https://iodd.com/api2"
+, "REMOTE_API_URL": "http://localhost:54382/api2"
 , "SERVER_LOCATION":"Local"
 
 //"LOGIN_PAGE":     "{SECURE_PATH}/login_client.html"                                   //#.(51015.02.3)
@@ -23,9 +23,10 @@ function replaceKey([aKey, aValue]) {
     if (typeof aValue === 'string') {
         Object.keys(_CONFIG).forEach(key => {
             _CONFIG[aKey] = _CONFIG[aKey].replace( new RegExp(`\\{${key}\\}`, 'g' ), _CONFIG[key]);
-        if (_CONFIG.SERVER_LOCATION.match( /remote/i )) {
-            _CONFIG[aKey] = _CONFIG[aKey].replace( /http:\/\/localhost/, _CONFIG.REMOTE_HOST )
-        if (_CONFIG.REMOTE_HOST.match( /\.[0-9]+/ ) == null) {
+        if (_CONFIG?.SERVER_LOCATION?.match( /remote/i )) {
+        var aREMOTE_HOST  = _CONFIG.REMOTE_API_URL.match(/^https?:\/\/[^\/]+/)[0].replace( /:[0-9]+/, "" );
+            _CONFIG[aKey] = _CONFIG[aKey].replace( /http:\/\/localhost/, aREMOTE_HOST )
+        if (_CONFIG.REMOTE_API_URL.match( /\.[0-9]+/ ) == null) {
             _CONFIG[aKey] = _CONFIG[aKey].replace( /:[0-9]{5}/, '' ) } } // Remove port too if not an IP
             } );
     }   }

@@ -22,40 +22,40 @@ class AdminRoles {
         this.loadRoles();
     }
 
-    async checkAuthentication() {
+    getJWTValue(key) {
         try {
-//          const response = await fetch(`${SERVER_API_URL}/member/info`, {             //#.(51013.01.5 RAM No Workie)
-            const response = await fetch( SERVER_API_URL + '/member/info', {            // .(51013.01.5 RAM Was http://localhost:54032/api2)
-                credentials: 'include'
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                this.currentUser = data.success ? data.member : null;
+            const payload = acmJWTGetPayload();
+            if (payload && payload[key]) {
+                return payload[key];
             }
         } catch (error) {
-            console.error('JWT server unavailable, using fallback authentication:', error);
+            console.log(`JWT payload read failed for ${key}:`, error.message);
         }
         
-        // Fallback authentication when JWT server is unavailable
-        if (!this.currentUser) {
-            // Use global variables if available
-            if (typeof gMemberId !== 'undefined' && typeof gRole !== 'undefined') {
-                this.currentUser = {
-                    MemberNo: gMemberId,
-                    Role: gRole
-                };
-            } else {
-                // Default to Admin role for testing when no authentication available
-                this.currentUser = {
-                    MemberNo: 1,
-                    Role: 'Admin'
-                };
-            }
+        if (key === 'user_role') return window.gRole;
+        if (key === 'user_no') return window.gMemberId;
+        return null;
+    }
+
+    async checkAuthentication() {
+        const memberId = this.getJWTValue('user_no') || window.gMemberId;
+        const memberRole = this.getJWTValue('user_role') || window.gRole || 'Member';
+        
+        // Update global variables for consistency
+        if (memberId && memberRole) {
+            window.gMemberId = memberId;
+            window.gRole = memberRole;
         }
         
-        // Check if user has Admin role
-        if (!this.currentUser || this.currentUser.Role !== 'Admin') {
+        this.currentUser = {
+            MemberNo: memberId,
+            Role: memberRole
+        };
+        
+        console.log('Auth ready - Role:', memberRole, 'UserNo:', memberId);
+        
+        // Only Admin role can access this page
+        if (memberRole !== 'Admin') {
             return false;
         }
         

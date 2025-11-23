@@ -126,19 +126,27 @@
     import      '../_config.js'                                                                             // .(51013.02.1 RAM Read this)
 //await import( '../_config.js' )                                                                           //#.(51013.02.1 RAM Load process.fvaR in IODD-Server_u1.08.mjs)
 
+       var  SERVER_PORT               =  process.fvaRs.SERVER_PORT || ''                                    // .(51121.01.4 RAM Hmmm...)
        var  SERVER_API_URL            =  process.fvaRs.SERVER_API_URL                                       // .(51013.02.3 RAM Define here)
-            process.env.Local_API_URL =  process.fvaRs.SERVER_API_URL                                       // .(51013.02.2 RAM Use fvaR instead)
+            process.env.Local_API_URL =  SERVER_API_URL                                                     // .(51121.01.5 RAM Use fvaR instead).(51122.01.4)
             process.env.PORT          =  SERVER_API_URL.match(   /:([0-9]+)\/?/)?.slice(1,2)[0] ?? ''       // .(51013.02.3 RAM Define them here)
+            process.env.PORT          =  SERVER_PORT ? SERVER_PORT : process.env.PORT                       // .(51121.01.6 RAM process.fvaRs.SERVER_PORT wins)
             process.env.HOST          =  SERVER_API_URL.match(/(.+):[0-9]+\/?/ )?.slice(1,2)[0] ?? ''       // .(51013.02.4)
             process.env.Local_Host    = `${process.env.HOST}:${process.env.PORT}`                           // .(51013.02.5)
+            process.env.Remote_Host   =  new URL(SERVER_API_URL).origin || ''                               // .(51121.01.7 RAM Gotta define this too, But they get overritten below)
+            process.env.Local_API_URL =  SERVER_API_URL                                                     // .(51121.01.8)
+            process.env.Remote_API_URL=  SERVER_API_URL                                                     // .(51121.01.9)
+
             process.env.Host_Location =  process.fvaRs.SERVER_LOCATION                                      // .(51013.02.6)
        var  SECURE_API_URL            =  process.fvaRs.SECURE_API_URL  // not SECURE_PATH                   // .(51013.02.7 RAM Define here)
 
+       if (!process.env.PORT) { console.log( "* No SERVER_PORT defined."); process.exit() }                 // .(51121.01.10 RAM)
 //  ------  ---- ----- =  ------|  -------------------------------- ------------------- ------------------+
 
        var  aPlatform  =  process.platform; // 'win32', 'darwin', 'linux', etc.
        var  isWindows  =  aPlatform === 'win32';
        var  isMac      =  aPlatform === 'darwin';
+
        var  aEnv_File  =  path.resolve(__dirname, '../../../.env'); // Absolute path to .env file
             console.log( `Platform: '${aPlatform}' (Windows: ${isWindows}, Mac: ${isMac})`)
             console.log( `aEnv_File: '${aEnv_File }'`)

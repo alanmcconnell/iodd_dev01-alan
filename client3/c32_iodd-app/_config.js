@@ -4,13 +4,13 @@ var _CONFIG =
 , "SERVER_API_URL": "http://localhost:54382/api2"
 , "SECURE_PATH":    "http://localhost:54333"
 , "SECURE_API_URL": "http://localhost:54383/api"
-//"REMOTE_API_URL": "https://iodd.com/api2"
-, "REMOTE_API_URL": "http://localhost:54382/api"
-, "SERVER_LOCATION":"Local"
+, "REMOTE_API_URL": "https://iodd.com/api2"                                             // .(51121.01.1 RAM We have a domain now)
+//"REMOTE_API_URL": "http://92.112.184.206:54382/api2"                                  //#.(51121.01.1)
+, "SERVER_LOCATION":"Remote"
 , "SECURE_APP_KEY": "JRvaCBEJcy7CDlHxMDyZ"
 
 //"LOGIN_PAGE":     "{SECURE_PATH}/login_client.html"                                   //#.(51015.02.3)
-, "LOGIN_PAGE":     "{SECURE_PATH}/client/c01_client-first-app/index.html"       // .(51015.02.3 RAM Needs full path for Live Server)
+, "LOGIN_PAGE":     "{SECURE_PATH}/client/c01_client-first-app/index.html"              // .(51015.02.3 RAM Needs full path for Live Server)
 , "LOGIN_SUCCESS":  "{CLIENT_PATH}/member-profile.html"
 , "LOGIN_FAILURE":  "{CLIENT_PATH}/index.html"
    }

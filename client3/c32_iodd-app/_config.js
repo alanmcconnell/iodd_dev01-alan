@@ -1,12 +1,13 @@
 var _CONFIG =
-{ "IODD_VERSION":   "2.05"
+{ "IODD_VERSION":   "2.13"
 , "CLIENT_PATH":    "http://localhost:54332/client3/c32_iodd-app"
+, "SERVER_PORT":    "54382"
 , "SERVER_API_URL": "http://localhost:54382/api2"
 , "SECURE_PATH":    "http://localhost:54333"
 , "SECURE_API_URL": "http://localhost:54383/api"
 , "REMOTE_API_URL": "https://iodd.com/api2"                                             // .(51121.01.1 RAM We have a domain now)
 //"REMOTE_API_URL": "http://92.112.184.206:54382/api2"                                  //#.(51121.01.1)
-, "SERVER_LOCATION":"Remote"
+, "SERVER_LOCATION":"Local"
 , "SECURE_APP_KEY": "JRvaCBEJcy7CDlHxMDyZ"
 
 //"LOGIN_PAGE":     "{SECURE_PATH}/login_client.html"                                   //#.(51015.02.3)

@@ -1,5 +1,5 @@
 var _CONFIG =
-{ "IODD_VERSION":   "2.05"
+{ "IODD_VERSION":   "2.13"
 , "CLIENT_PATH":    "http://localhost:54332/client3/c32_iodd-app"
 , "SERVER_PORT":    "54382"
 , "SERVER_API_URL": "http://localhost:54382/api2"
@@ -8,7 +8,7 @@ var _CONFIG =
 //"REMOTE_API_URL": "https://iodd.com/api2"                                             //#.(51121.01.2 RAM We have a domain now)
 //"REMOTE_API_URL": "http://92.112.184.206:54382/api2"                                  //#.(51121.01.2)
 , "REMOTE_API_URL": "http://localhost:54382/api2"                                       // .(51121.01.2)
-, "SERVER_LOCATION":"Remote"
+, "SERVER_LOCATION":"Local"
 
 //"LOGIN_PAGE":     "{SECURE_PATH}/login_client.html"                                   //#.(51015.02.3)
 , "LOGIN_PAGE":     "{SECURE_PATH}/client/c01_client-first-app/login_client.html"       // .(51015.02.3 RAM Needs full path for Live Server)

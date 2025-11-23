@@ -128,7 +128,7 @@
 
        var  SERVER_PORT               =  process.fvaRs.SERVER_PORT || ''                                    // .(51121.01.4 RAM Hmmm...)
        var  SERVER_API_URL            =  process.fvaRs.SERVER_API_URL                                       // .(51013.02.3 RAM Define here)
-            process.env.Local_API_URL =  SERVER_API_URL                                                     // .(51121.01.5 RAM Use fvaR instead).(51122.01.4)
+            process.env.Local_API_URL =  SERVER_API_URL                                                     // .(51121.01.5 RAM Use fvaR instead)
             process.env.PORT          =  SERVER_API_URL.match(   /:([0-9]+)\/?/)?.slice(1,2)[0] ?? ''       // .(51013.02.3 RAM Define them here)
             process.env.PORT          =  SERVER_PORT ? SERVER_PORT : process.env.PORT                       // .(51121.01.6 RAM process.fvaRs.SERVER_PORT wins)
             process.env.HOST          =  SERVER_API_URL.match(/(.+):[0-9]+\/?/ )?.slice(1,2)[0] ?? ''       // .(51013.02.4)
@@ -148,7 +148,7 @@
        var  isMac      =  aPlatform === 'darwin';
 
        var  aEnv_File  =  path.resolve(__dirname, '../../../.env'); // Absolute path to .env file
-            console.log( `Platform: '${aPlatform}' (Windows: ${isWindows}, Mac: ${isMac})`)
+            console.log( ` Platform: '${aPlatform}' (Windows: ${isWindows}, Mac: ${isMac})`)
             console.log( `aEnv_File: '${aEnv_File }'`)
             console.log( `__dirname: '${__dirname}'`)
 

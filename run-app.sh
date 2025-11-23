@@ -141,7 +141,7 @@ function setServerAPI_URL() {                                                   
  if [ "${aLocation}" == "Remote" ]; then
          aServerAPI_URL="$( getFVar "REMOTE_API_URL" )";
          aClientPath="$( echo "${aServerAPI_URL}" | sed 's|^\(https\?://[^/]*\).*|\1|' | awk '{ sub( /:[0-9]+/, "" ); print }' )"  # .(51017.02.1)
- if [[ "${aClientPath}" =~ .[0-9]+. ]]; then aClientPath="${aClientPath}:${nPort}"; fi
+if [[ "${aClientPath}" =~ .[0-9]+. ]]; then aClientPath="${aClientPath}:${nPort}"; fi
          fi
 
 #echo "  aLocation: '${aLocation}'";
@@ -172,11 +172,13 @@ function setServerAPI_URL() {                                                   
          cat "${aClientDir}/_config.js" | awk "${aAWKpgm}"    >"${aClientDir}/${aConfig_tmp}"               # .(51122.03.2)
 
 #        echo -e "  aAWKpgm: \n${aAWKpgm}"; echo " _config.tmp.js: "; cat "${aClientDir}/_config.tmp.js"
-     if (bSave) {                                                                                           # .(51122.03.3 Beg)
+     if [ "${bSave}" == "1" ]; then                                                                         # .(51122.03a.1 RAM Opps).(51122.03.3 Beg)
 #        mv  "${aClientDir}/_config.tmp.js" "${aClientDir}/_config.js"                                      ##.(51122.03.4)
          mv  "${aClientDir}/${aConfig_tmp}" "${aClientDir}/_config.js"                                      # .(51122.03.4)
          rm  "${aClientDir}/${aConfig_tmp}"                                                                 # .(51122.03.5)
-         }                                                                                                  # .(51122.03.3 End)
+       else                                                                                                 # .(51122.03a.2 RAM Add msg)                
+         echo "      Saved tmp config file: "${aClientDir}/${aConfig_tmp}                                   # .(51122.03a.3)
+         fi                                                                                                 # .(51122.03.3 End)
 #        echo  "   Setting SERVER_API_URL to: ${aServerHost// /}:${nServerPort}${aServerAPI_URL} in ${aClientDir}/_config.js"
 #        echo  "   Setting CLIENT_PATH    to: ${aServerHost}:${nPort} in ${aClientDir}/_config.js"
          echo  "   Setting CLIENT_PATH    to: ${aClientPath} in ${aClientDir}/_config.js"

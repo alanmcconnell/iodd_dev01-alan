@@ -10,11 +10,12 @@
           if [  "${nUseThisStage}" != ""     ]; then nStg=${nUseThisStage}; fi          # .(51017.05.2)
   nApp=1
   nPort="${nPrj}${nStg}##"
+  bSave=0                                                                                                   # .(51122.03.1 RAM Don't resave in Alan's IODD app)
 
 # ---------------------------------------------------
 
   if [ "$1" == "" ]; then
-     echo -e "\n  Run Client and/or Server App(s) for Project 54"
+     echo -e "\n  Run Client and/or Server App(s) for Project 54 (v1.12)"
      echo -e   "  Usage: run-app [c|s|a]{nStg}{nApp} [-b] [-q]"
      echo -e   ""
      echo -e   "    c|s|a = c)Client, s)Server, or a)both"
@@ -167,10 +168,15 @@ function setServerAPI_URL() {                                                   
 /^[, "]*CLIENT_PATH[ "]*:/    { print ", \"CLIENT_PATH\":    \"'${aClientPath}'\""; next }
 /^[, "]*SERVER_API_URL[ "]*:/ { print ", \"SERVER_API_URL\": \"'${aServerAPI_URL}'\""; next }
                   { print }'
-         cat "${aClientDir}/_config.js" | awk "${aAWKpgm}" > "${aClientDir}/_config.tmp.js"
+         aTS="$( date '+%y%m%d.%H%M' )"; aTS="${aTS:1}"; aConfig_tmp="_config_v${aTS}.tmp.js"               # .(51122.03.1 RAM Add $TS to _config.tmp.js)
+         cat "${aClientDir}/_config.js" | awk "${aAWKpgm}"    >"${aClientDir}/${aConfig_tmp}"               # .(51122.03.2)
 
 #        echo -e "  aAWKpgm: \n${aAWKpgm}"; echo " _config.tmp.js: "; cat "${aClientDir}/_config.tmp.js"
-#        mv  "${aClientDir}/_config.tmp.js" "${aClientDir}/_config.js"
+     if (bSave) {                                                                                           # .(51122.03.3 Beg)
+#        mv  "${aClientDir}/_config.tmp.js" "${aClientDir}/_config.js"                                      ##.(51122.03.4)
+         mv  "${aClientDir}/${aConfig_tmp}" "${aClientDir}/_config.js"                                      # .(51122.03.4)
+         rm  "${aClientDir}/${aConfig_tmp}"                                                                 # .(51122.03.5)
+         }                                                                                                  # .(51122.03.3 End)
 #        echo  "   Setting SERVER_API_URL to: ${aServerHost// /}:${nServerPort}${aServerAPI_URL} in ${aClientDir}/_config.js"
 #        echo  "   Setting CLIENT_PATH    to: ${aServerHost}:${nPort} in ${aClientDir}/_config.js"
          echo  "   Setting CLIENT_PATH    to: ${aClientPath} in ${aClientDir}/_config.js"

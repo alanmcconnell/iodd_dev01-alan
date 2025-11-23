@@ -1014,13 +1014,22 @@ this.Member_postRoute = function( ) {                                           
 //      if (mRecs1.error)    { sndErr(  pRes, mRecs1.error   ); return }                                    //#.(30515.03.22 RAM return no workie, CUZ mRecs1.error is an error)
         if (mRecs1[0] == 'error') {                                                                         // .(30515.03.22 RAM Would mRecs1[0].error be better)
                                sndErr(  pRes, mRecs1[1]      ); return }
+        
+        // If this was an INSERT (new member), get the new ID and update MemberNo
+        if (pArgs.Id == 0) {
+            // Get the last inserted ID
+            const maxIdResult = await getData( pDB, 'SELECT MAX(Id) as maxId FROM members', aRoute );
+            if (maxIdResult && maxIdResult[0] && maxIdResult[0].maxId) {
+                const newId = maxIdResult[0].maxId;
+                console.log('New member inserted with Id:', newId);
+                pArgs.Id = newId;
+                await putData( pDB, `UPDATE members SET MemberNo = ${newId} WHERE Id = ${newId}`, aRoute );
+            }
+        }
 
 //     var  mRecs2     =   [ { MemberNo:mRecs1[2].affectedId, Count: mRecs1[2].affectedRows, ... }          // .(30515.03.23 RAM Why is affectedId = 0)
 //     var  mRecs2     =   [ { MemberNo:pArgs.MemberNo,  Count: mRecs1[2].affectedRows, ... }               //#.(30525.03.11)
-       var  mRecs2     =   [ { Id:      pArgs.Id,        Count: mRecs1[2].affectedRows                      // .(30525.03.11 RAM Was: MemberNo. Gotta change it here too)
-                             , Email:   pArgs.Email,       Msg: mRecs1[1] }
-                               ]
-       var  mRecs2     = await getData( pDB,  fmtSQL2( mRecs2[0] ), aRoute );
+       var  mRecs2     = await getData( pDB,  fmtSQL2( pArgs ), aRoute );                                  // Use pArgs with updated Id
 
                                sndJSON( pRes, JSON.stringify( { member: mRecs2 } ), aRoute )
                                sayMsg( 'Done', "Member_postRoute_Handler" )                                 // .(30528.05.8)
@@ -1048,8 +1057,8 @@ this.Member_postRoute = function( ) {                                           
             // Check if this is a new member (Id = 0 indicates new record)
             if (pVars.Id == 0) {
                 console.log('Using INSERT for new member');
-                var aSQL = `INSERT INTO members (MemberNo, FirstName, LastName, Email, Phone1, Phone2, Company, Address1, Address2, City, State, Zip, Country, WebSite, RoleId, Active, CreatedAt, UpdatedAt)
-                           VALUES (${pVars.MemberNo || 0}, '${pVars.FirstName || ''}', '${pVars.LastName || ''}', '${pVars.Email || ''}', '${pVars.Phone1 || ''}', '${pVars.Phone2 || ''}', '${pVars.Company || ''}', '${pVars.Address1 || ''}', '${pVars.Address2 || ''}', '${pVars.City || ''}', '${pVars.State || ''}', '${pVars.Zip || ''}', '${pVars.Country || ''}', '${pVars.WebSite || ''}', ${pVars.RoleId || 1}, 'Y', NOW(), NOW())`;
+                var aSQL = `INSERT INTO members (FirstName, LastName, Email, PIN, RoleId, Active, CreatedAt, UpdatedAt)
+                           VALUES ('${pVars.FirstName || ''}', '${pVars.LastName || ''}', '${pVars.Email || ''}', '${pVars.PIN || 'iodd'}', ${pVars.RoleId || 1}, 'Y', NOW(), NOW())`;
                 return aSQL;
             }
             
@@ -1120,7 +1129,7 @@ this.Member_postRoute = function( ) {                                           
 
   function  fmtSQL2( pMember ) {
 //          return `SELECT * FROM members WHERE MemberNo = ${pMember.MemberNo}`                             //#.(30525.03.13)
-            return `SELECT * FROM members WHERE Id  = ${pMember.Id}`                                        // .(30525.03.13 RAM Was: MemberNo )
+            return `SELECT * FROM members WHERE Id = ${pMember.Id}`                                         // .(30525.03.13 RAM Was: MemberNo )
             }
 //     ---  ------------------  =  ---------------------------------
          }; // eof Member_postRoute                                                                         // .(30510.03.4 End)

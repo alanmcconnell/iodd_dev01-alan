@@ -1,5 +1,5 @@
 var _CONFIG =
-{ "IODD_VERSION":   "2.02"
+{ "IODD_VERSION":   "2.05"
 , "CLIENT_PATH":    "http://localhost:54332/client3/c32_iodd-app"
 , "SERVER_PORT":    "54382"
 , "SERVER_API_URL": "http://localhost:54382/api2"

@@ -11,11 +11,12 @@
   nApp=1
   nPort="${nPrj}${nStg}##"
   bSave=0                                                                                                   # .(51122.03.1 RAM Don't resave in Alan's IODD app)
+  nVer=1.13                                                                                                 # .(51124.02.1 RAM Set Run-App Version)
 
 # ---------------------------------------------------
 
   if [ "$1" == "" ]; then
-     echo -e "\n  Run Client and/or Server App(s) for Project 54 (v1.12)"
+     echo -e "\n  Run Client and/or Server App(s) for Project 54 (v${nVer})"                                #. (51124.02.2)
      echo -e   "  Usage: run-app [c|s|a]{nStg}{nApp} [-b] [-q]"
      echo -e   ""
      echo -e   "    c|s|a = c)Client, s)Server, or a)both"
@@ -31,10 +32,13 @@
 
   aQuiet=""; if [ "$2" == "-q" ]; then aQuiet="--quiet "; set -- "$1" "${@:3}"; fi
              if [ "$3" == "-q" ]; then aQuiet="--quiet "; fi
+  bSave="0"; if [ "$2" == "-s" ]; then bSave="1";         set -- "$1" "${@:3}"; fi                          # .(51122.03c.1 RAM Add bSave Arg)
+             if [ "$3" == "-s" ]; then bSave="1";         fi                                                # .(51122.03c.2)
 
 # ---------------------------------------------------
 
 function checkFW() {
+    if [ "${OSTYPE:0:6}" == "darwin" ]; then return; fi                                                     # .(51124.03.1 RAM ufw dirrerent/complicated on a mac)
     bOK="$( sudo ufw status | awk '/'$1'/ { print 1 }; END { print 0 }' )"
     if [ "${bOK}" == "0" ]; then sudo ufw allow $1/tcp > /dev/null 2>&1;
 #                                sudo ufw delete allow 54332/tcp
@@ -105,6 +109,7 @@ if [ "${aAppName}" == "" ] || [ "${aAppName}" == "Unknown" ]; then              
    if [ "${aHost}" == "" ]; then aHost="localhost"; fi;                                 # .(50911.03.x)
    }
 # ---------------------------------------------------
+
 function getFVar( ) {                                                             # .(50915.02.1 RAM Write getFVar)
          aAWKpgm="'/^[,\\ \"]*${aFVar}[\\ \"]*:/ { sub( /^[,\\ \"]*${aFVar}[\\ \"]*:/,\\ \"\" ); sub( /.+= */,\\ \"\" ); print }'"
 #        aAWKpgm='/^[,\ "]*'"${aFVar}"'[ "]*:/ { sub( /^[,\ \"]*'"${aFVar}"'[ "]*:/, "" ); sub( /.+= */,\ "" ); print }'
@@ -124,10 +129,15 @@ function getFVar( ) {                                                           
 #        aAWKpgm="${aAWKpgm//{SP\}/ }"
 #        echo -e "-- aAWKpgm: ${aAWKpgm}\n"; exit
 #                 printf "..aAWKpgm: %s\n" "$aAWKpgm"
-
-         aVar="$( cat "${aServerDir}/_config.js" | awk "${aAWKpgm}" | tr -d "'" | tr -d '"' )"   # .(51016.02.2).(51013.05.7)
-         echo "${aVar// /}"
+            if [ ! -f "${aServerDir}/_config.js" ]; then  aVar=""; else                                     # .(51124.04.1 RAM ??)
+         aVar="$( cat "${aServerDir}/_config.js" | awk "${aAWKpgm}" | tr -d "'" | tr -d '"' )"              # .(51016.02.2).(51013.05.7)
+         echo "${aVar// /}"; fi                                                                             # .(51124.04.2)
+            if [   -f "${aClientDir}/_config.js" ]; then                                                    # .(51124.04.3 RAM ??)
+         aVar="$( cat "${aClientDir}/_config.js" | awk "${aAWKpgm}" | tr -d "'" | tr -d '"' )"              # .(51124.04.5)
+         echo "${aVar// /}"; fi                                                                             # .(51124.04.6)
          }                                                                              # .(51016.02.1)
+# ---------------------------------------------------
+
 function setServerAPI_URL() {                                                           # .(50911.04.1 RAM Write function Beg)
          aServerDir="$1"
          aClientDir="$2"
@@ -138,14 +148,20 @@ function setServerAPI_URL() {                                                   
          aServerAPI_URL="$( getFVar "SERVER_API_URL" )"
          aLocation="$(      getFVar "SERVER_LOCATION" )"
          aClientPath="$(    getFVar "CLIENT_PATH" )"
+#        echo " --- aLocation='${aLocation}'; aServerAPI_URL: '${aServerAPI_URL}'; aClientPath: ${aClientPath}'"; 
  if [ "${aLocation}" == "Remote" ]; then
          aServerAPI_URL="$( getFVar "REMOTE_API_URL" )";
          aClientPath="$( echo "${aServerAPI_URL}" | sed 's|^\(https\?://[^/]*\).*|\1|' | awk '{ sub( /:[0-9]+/, "" ); print }' )"  # .(51017.02.1)
 if [[ "${aClientPath}" =~ .[0-9]+. ]]; then aClientPath="${aClientPath}:${nPort}"; fi
-         fi
+      else    
+         aServerAPI_URL="$( getFVar "LOCAL_API_URL" )";
+         aClientPath="$( getFVar "LOCAL_PATH" )";
+         fi 
+         
+#        echo " --- aLocation='${aLocation}'; aServerAPI_URL: '${aServerAPI_URL}'; aClientPath: ${aClientPath}'"; exit
 
 #echo "  aLocation: '${aLocation}'";
-#echo "  aServerAPI_URL: '${aServerAPI_URL}'"; # exit
+#echo "  aServerAPI_URL: '${aServerAPI_URL}'";  exit
 
          nServerPort="$(   echo "${aServerAPI_URL}" | awk '{ sub( /.+:/, "" ); sub( /\/.+/, "" ); print }' )"                                               # .(51013.05.5 RAM Use _config.js, not .env)
 #        aServerHost="$(   echo "${aServerAPI_URL}" | awk '{ sub( /:[0-9]+/, "" ); print }' )"  ##.(51013.05.6).(51017.02.1)
@@ -155,29 +171,31 @@ if [[ "${aClientPath}" =~ .[0-9]+. ]]; then aClientPath="${aClientPath}:${nPort}
 #        echo "  Setting CLIENT_PATH    to: ${aServerHost}:${nPort} in ${aClientDir}/_config.js";   exit
 #        echo "  Setting CLIENT_PATH    to: ${aClientPath} in ${aClientDir}/_config.js";            exit
 
-   if [ ! -f "${aClientDir}/_config.js" ]; then                                             # .(51013.05.8 RAM Use _config.js, not config.js Beg)
+   if [ ! -f "${aClientDir}/_config.js" ]; then                                                             # .(51013.05.8 RAM Use _config.js, not config.js Beg)
          echo 'var CONFIG = '                              > "${aClientDir}/_config.js"
-         echo ' { "SERVER_API_URL": "{SERVER_API_URL}"'   >> "${aClientDir}/_config.js"     # If it doesn't exist
-         echo ' , "CLIENT_PATH":    "{CLIENT_PATH}"'      >> "${aClientDir}/_config.js"
+         echo ' { "CLIENT_PATH":    "{CLIENT_PATH}"'      >> "${aClientDir}/_config.js"
+         echo ' , "SERVER_API_URL": "{SERVER_API_URL}"'   >> "${aClientDir}/_config.js"     # If it doesn't exist
          echo '  }'                                       >> "${aClientDir}/_config.js"     # .(51013.05.8 End)
+         bSave=1                                                                                            # .(51122.03c.3 RAM Set if it didn't exist) 
          fi
 #        aAWKpgm='/SERVER_API_URL:/ { print   "  SERVER_API_URL:   \"'${aServerHost// /}:${nServerPort}${aServerAPI_URL}'\","; next }
 #     /^[, "]*SERVER_API_URL[ "]*:/ { print ", \"SERVER_API_URL\": \"'${aServerHost}:${nPort}}'\""; next }
 #     /^[, "]*CLIENT_PATH[ "]*:/    { print ", \"CLIENT_PATH\":    \"'${aServerHost}:${nPort}'\""; next }
          aAWKpgm='
-/^[, "]*CLIENT_PATH[ "]*:/    { print ", \"CLIENT_PATH\":    \"'${aClientPath}'\""; next }
-/^[, "]*SERVER_API_URL[ "]*:/ { print ", \"SERVER_API_URL\": \"'${aServerAPI_URL}'\""; next }
+/^[, "{]*CLIENT_PATH[ "]*:/    { print ", \"CLIENT_PATH\":    \"'${aClientPath}'\""; next }                 # 
+/^[, "{]*SERVER_API_URL[ "]*:/ { print ", \"SERVER_API_URL\": \"'${aServerAPI_URL}'\""; next }
                   { print }'
          aTS="$( date '+%y%m%d.%H%M' )"; aTS="${aTS:1}"; aConfig_tmp="_config_v${aTS}.tmp.js"               # .(51122.03.1 RAM Add $TS to _config.tmp.js)
-         cat "${aClientDir}/_config.js" | awk "${aAWKpgm}"    >"${aClientDir}/${aConfig_tmp}"               # .(51122.03.2)
+         cat "${aClientDir}/_config.js" | awk "${aAWKpgm}"     >"${aClientDir}/${aConfig_tmp}"              # .(51122.03.2)
 
-#        echo -e "  aAWKpgm: \n${aAWKpgm}"; echo " _config.tmp.js: "; cat "${aClientDir}/_config.tmp.js"
+#        echo -e "  aAWKpgm: \n${aAWKpgm}"; echo " _config.tmp.js: "; cat "${aClientDir}/${aConfig_tmp}" 
      if [ "${bSave}" == "1" ]; then                                                                         # .(51122.03a.1 RAM Opps).(51122.03.3 Beg)
 #        mv  "${aClientDir}/_config.tmp.js" "${aClientDir}/_config.js"                                      ##.(51122.03.4)
          mv  "${aClientDir}/${aConfig_tmp}" "${aClientDir}/_config.js"                                      # .(51122.03.4)
-         rm  "${aClientDir}/${aConfig_tmp}"                                                                 # .(51122.03.5)
-       else                                                                                                 # .(51122.03a.2 RAM Add msg)                
-         echo "      Saved tmp config file: "${aClientDir}/${aConfig_tmp}                                   # .(51122.03a.3)
+#        rm  "${aClientDir}/${aConfig_tmp}"                                                                 # .(51122.03c.4).(51122.03.5)
+         echo  "     Saved _config.js file:   ${aClientDir}/_config.js"                                     # .(51122.03c.5).(51122.03.6)
+       else                                                                                                 # .(51122.03b.1 RAM Add msg)                
+         echo  "     Saved tmp _config file:  ${aClientDir}/${aConfig_tmp}"                                 # .(51122.03b.2)
          fi                                                                                                 # .(51122.03.3 End)
 #        echo  "   Setting SERVER_API_URL to: ${aServerHost// /}:${nServerPort}${aServerAPI_URL} in ${aClientDir}/_config.js"
 #        echo  "   Setting CLIENT_PATH    to: ${aServerHost}:${nPort} in ${aClientDir}/_config.js"
@@ -186,6 +204,7 @@ if [[ "${aClientPath}" =~ .[0-9]+. ]]; then aClientPath="${aClientPath}:${nPort}
 #        exit
          }                                                                              # .(50911.04.1 End)
 # ---------------------------------------------------
+
 function runServer() {
 #                        echo "\n  runServer( '$1', '$2' )"
     setPort "$1" "$2"  # Sets aServer, aApp and nPort
@@ -193,7 +212,9 @@ function runServer() {
     getAppName $1 $2;  # echo "  Server nPort: ${nPort} for ${aAppName}"; return
 #   echo -e "\n  runServer[1] Client nPort: ${nPort} for ${aAppName}";                  # .(50113.05.3 RAM ??? To get the client folder)
 
- if [ -f "_config.js" ]; then cp -p "_config.js" "${aServer}/${aAppName}/_config.js";fi # .(51017.04.1)
+ if [ ! -f "${aServer}/${aAppName}/_config.js" ]; then                                                       # .(51017.04a.1 RAM If _config.js doesn't exist)
+ if [   -f "_config.yaml.js" ]; then cp -p "_config.yaml.js" "${aServer}/${aAppName}/_config.js";fi          # .(51017.04a.2 RAM Copy _config.yaml.js).(51017.04.1)
+    fi                                                                                                       # .(51017.04a.3)
 
 #   Install dependencies if needed
     bDoit="0"; if [ "${3:0:2}" == "-d" ]; then bDoit="1"; fi
@@ -242,7 +263,9 @@ function runClient() {
 
 #   setServerAPI_URL "${aServer}/${aServerName}" "${aClient}/${aAppName}"; # exit       # .(50911.04.2 RAM Use it)
 
- if [ -f "_config.js" ]; then cp -p "_config.js" "${aClient}/${aAppName}/_config.js";fi # .(51017.04.2)
+ if [ ! -f "${aClient}/${aAppName}/_config.js" ]; then                                                       # .(51017.04a.4 RAM If _config.js doesn't exist)
+ if [   -f "_config.yaml.js" ]; then cp -p "_config.yaml.js" "${aClient}/${aAppName}/_config.js";fi          # .(51017.04a.5 RAM Copy _config.yaml.js).(51017.04.2)
+    fi                                                                                                       # .(51017.04a.6)
 
 #   Install dependencies if needed
     bDoit="0"; if [ "${3:0:2}" == "-d" ]; then bDoit="1"; fi
@@ -261,7 +284,7 @@ function runClient() {
 
     chkPort ${nPort}   # Kill any existing processes on our ports
     setServerAPI_URL "${aServer}/${aServerName}" "${aClient}/${aAppName}"; # exit       # .(50911.04.2 RAM Use it)
-
+ 
 # echo "  live-server ${aQuiet}--port=${nPort} --open=${aAppName}/ --watch=.,../${aServer}/${aServerName}"    # .(50926.05.2)
 #         live-server ${aQuiet}--port=${nPort} --open=${aAppName}/ --watch=.,../${aServer}/${aServerName} &   # .(50926.05.2)
 # echo "  live-server ${aQuiet}--port=${nPort} --open=${aClient}/${aAppName} --watch=${aClient}/${aAppName},${aServer}/${aServerName}"    # .(50926.05.2)

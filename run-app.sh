@@ -38,7 +38,7 @@
 # ---------------------------------------------------
 
 function checkFW() {
-    if [ "${OSTYPE:0:6}" == "darwin" ]; then return; fi                                                     # .(51124.03.1 RAM ufw different/complicated on a mac)  
+    if [ "${OSTYPE:0:6}" == "darwin" ]; then return; fi                                                     # .(51124.03.1 RAM ufw is different/complicated on a mac)  
     bOK="$( sudo ufw status | awk '/'$1'/ { print 1 }; END { print 0 }' )"
     if [ "${bOK}" == "0" ]; then sudo ufw allow $1/tcp > /dev/null 2>&1;
 #                                sudo ufw delete allow 54332/tcp
@@ -129,10 +129,10 @@ function getFVar( ) {                                                           
 #        aAWKpgm="${aAWKpgm//{SP\}/ }"
 #        echo -e "-- aAWKpgm: ${aAWKpgm}\n"; exit
 #                 printf "..aAWKpgm: %s\n" "$aAWKpgm"
-            if [ ! -f "${aServerDir}/_config.js" ]; then  aVar=""; else                                     # .(51124.04.1 RAM ??)
+            if [ ! -f "${aServerDir}/_config.js" ]; then  aVar=""; else                                     # .(51124.04.1 RAM getFVAR for if exists for server)
          aVar="$( cat "${aServerDir}/_config.js" | awk "${aAWKpgm}" | tr -d "'" | tr -d '"' )"              # .(51016.02.2).(51013.05.7)
          echo "${aVar// /}"; fi                                                                             # .(51124.04.2)
-            if [   -f "${aClientDir}/_config.js" ]; then                                                    # .(51124.04.3 RAM ??)
+            if [   -f "${aClientDir}/_config.js" ]; then                                                    # .(51124.04.3 RAM getFVAR for if exists for client)
          aVar="$( cat "${aClientDir}/_config.js" | awk "${aAWKpgm}" | tr -d "'" | tr -d '"' )"              # .(51124.04.5)
          echo "${aVar// /}"; fi                                                                             # .(51124.04.6)
          }                                                                              # .(51016.02.1)

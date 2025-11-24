@@ -38,7 +38,7 @@
 # ---------------------------------------------------
 
 function checkFW() {
-    if [ "${OSTYPE:0:6}" == "darwin" ]; then return; fi                                                     # .(51124.03.1 RAM ufw dirrerent/complicated on a mac)
+    if [ "${OSTYPE:0:6}" == "darwin" ]; then return; fi                                                     # .(51124.03.1 RAM ufw different/complicated on a mac)
     bOK="$( sudo ufw status | awk '/'$1'/ { print 1 }; END { print 0 }' )"
     if [ "${bOK}" == "0" ]; then sudo ufw allow $1/tcp > /dev/null 2>&1;
 #                                sudo ufw delete allow 54332/tcp

@@ -131,11 +131,11 @@ function getFVar( ) {                                                           
 #                 printf "..aAWKpgm: %s\n" "$aAWKpgm"
             if [ ! -f "${aServerDir}/_config.js" ]; then  aVar=""; else                                     # .(51124.04.1 RAM getFVAR for if exists for server)
          aVar="$( cat "${aServerDir}/_config.js" | awk "${aAWKpgm}" | tr -d "'" | tr -d '"' )"              # .(51016.02.2).(51013.05.7)
-               fi                                                                                           # .(51124.04.2)
+               fi                                                                                           # .(51124.04b.1).(51124.04.2)
             if [   -f "${aClientDir}/_config.js" ]; then                                                    # .(51124.04.3 RAM getFVAR for if exists for client)
          aVar="$( cat "${aClientDir}/_config.js" | awk "${aAWKpgm}" | tr -d "'" | tr -d '"' )"              # .(51124.04.5)
-               fi                                                                                           # .(51124.04.6)
-         echo "${aVar// /}"                                                                                 # .(51124.04.7)
+               fi                                                                                           # .(51124.04b.2).(51124.04.6)
+         echo "${aVar// /}"                                                                                 # .(51124.04b.3).(51124.04.7)
          }                                                                              # .(51016.02.1)
 # ---------------------------------------------------
 

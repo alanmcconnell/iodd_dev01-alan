@@ -8,7 +8,7 @@ var _FVARS =
 , "SECURE_PATH":    "http://localhost:55301"
 , "SECURE_API_URL": "http://localhost:55351/api"
 //"REMOTE_API_URL": "http://92.112.184.206:54382/api2"                             
-, "SERVER_LOCATION":"Remote"
+, "SERVER_LOCATION":"Local"
 , "SECURE_APP_KEY": "JRvaCBEJcy7CDlHxMDyZ"
 , "LOGIN_PAGE":     "http://localhost:55301/client/c01_client-first-app/login_client.html"      
 , "LOGIN_SUCCESS":  "http://localhost:54332/member-profile.html"

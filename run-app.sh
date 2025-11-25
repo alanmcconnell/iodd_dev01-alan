@@ -131,10 +131,11 @@ function getFVar( ) {                                                           
 #                 printf "..aAWKpgm: %s\n" "$aAWKpgm"
             if [ ! -f "${aServerDir}/_config.js" ]; then  aVar=""; else                                     # .(51124.04.1 RAM getFVAR for if exists for server)
          aVar="$( cat "${aServerDir}/_config.js" | awk "${aAWKpgm}" | tr -d "'" | tr -d '"' )"              # .(51016.02.2).(51013.05.7)
-         echo "${aVar// /}"; fi                                                                             # .(51124.04.2)
+               fi                                                                                           # .(51124.04.2)
             if [   -f "${aClientDir}/_config.js" ]; then                                                    # .(51124.04.3 RAM getFVAR for if exists for client)
          aVar="$( cat "${aClientDir}/_config.js" | awk "${aAWKpgm}" | tr -d "'" | tr -d '"' )"              # .(51124.04.5)
-         echo "${aVar// /}"; fi                                                                             # .(51124.04.6)
+               fi                                                                                           # .(51124.04.6)
+         echo "${aVar// /}"                                                                                 # .(51124.04.7)
          }                                                                              # .(51016.02.1)
 # ---------------------------------------------------
 
@@ -182,9 +183,9 @@ if [[ "${aClientPath}" =~ .[0-9]+. ]]; then aClientPath="${aClientPath}:${nPort}
 #     /^[, "]*SERVER_API_URL[ "]*:/ { print ", \"SERVER_API_URL\": \"'${aServerHost}:${nPort}}'\""; next }
 #     /^[, "]*CLIENT_PATH[ "]*:/    { print ", \"CLIENT_PATH\":    \"'${aServerHost}:${nPort}'\""; next }
          aAWKpgm='
-/^[, "{]*CLIENT_PATH[ "]*:/    { print ", \"CLIENT_PATH\":    \"'${aClientPath}'\""; next }                 # 
-/^[, "{]*SERVER_API_URL[ "]*:/ { print ", \"SERVER_API_URL\": \"'${aServerAPI_URL}'\""; next }
-                  { print }'
+      /^[, "{]*CLIENT_PATH[ "]*:/    { print ", \"CLIENT_PATH\":    \"'${aClientPath}'\""; next }                   
+      /^[, "{]*SERVER_API_URL[ "]*:/ { print ", \"SERVER_API_URL\": \"'${aServerAPI_URL}'\""; next }
+                                     { print }'
          aTS="$( date '+%y%m%d.%H%M' )"; aTS="${aTS:1}"; aConfig_tmp="_config_v${aTS}.tmp.js"               # .(51122.03.1 RAM Add $TS to _config.tmp.js)
          cat "${aClientDir}/_config.js" | awk "${aAWKpgm}"     >"${aClientDir}/${aConfig_tmp}"              # .(51122.03.2)
 

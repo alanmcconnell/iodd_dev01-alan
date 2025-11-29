@@ -34,7 +34,7 @@
              if [ "$3" == "-q" ]; then aQuiet="--quiet "; fi
   bSave="0"; if [ "$2" == "-s" ]; then bSave="1";         set -- "$1" "${@:3}"; fi                          # .(51122.03c.1 RAM Add bSave Arg)
              if [ "$3" == "-s" ]; then bSave="1";         fi                                                # .(51122.03c.2)
-
+             if [ "${THE_SERVER:0:5}" == "formr" ]; then bSave=1; fi                                        # .(51129.04.1 RAM My goodness)
 # ---------------------------------------------------
 
 function checkFW() {

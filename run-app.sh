@@ -358,7 +358,7 @@ function runClient() {
  if [ "${1:0:1}" == "s" ] || [ "${1:0:1}" == "a" ]; then
     runServer "s${1:1:2}" ${nPort}                                                      # .(50911.04.3 RAM Removes 3rd arg)
     sleep 6  # Wait for server to start
-    echo "  ----------------------------------------------------------------------"     # .(51130.02.1 RAM Added line)
+    echo "  ----------------------------------------------------------------------"     # .(51130.02.1 RAM Added line)  
     fi
          echot "  [353] --- bSave: ${bSave}, Does it exist: $( ls -1 "client32/c32_iodd-app/_config.js" 2>/dev/null )"
 

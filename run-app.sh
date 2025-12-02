@@ -73,7 +73,7 @@ function chkPort() {
             echo "  Killing linux process $pid for port $port"
             kill -9 $pid > /dev/null 2>&1 | awk '{ print "  " $0 }'
         fi
-        sleep 1  # Wait for PM2 to restart it                                           # .(51130.01.1 RAM Check if PM2 has got port Beg)
+        sleep 1  # Wait for PM2 to restart it                                           # .(51130.01.1 RAM Check if PM2 has got port Beg)  
         local pid=$(lsof -ti:$port)
         if [ "$pid" != "0" ] && [ ! -z "$pid" ]; then
             echo "* PM2 has restarted the service for that port.";

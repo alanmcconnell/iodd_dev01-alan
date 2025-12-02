@@ -343,7 +343,7 @@ function runClient() {
 #         live-server ${aQuiet}--port=${nPort} --host=0.0.0.0 --open=${aClient}/${aAppName} --watch=${aClient}/${aAppName},${aServer}/${aServerName} &   # .(50926.05.2)
   echo "  live-server ${aClient}/${aAppName} ${aQuiet}--port=${nPort} --host=0.0.0.0 --no-content-length --watch=${aClient}/${aAppName},${aServer}/${aServerName}"    # .(50926.05b.1)
           live-server ${aClient}/${aAppName} ${aQuiet}--port=${nPort} --host=0.0.0.0 --no-content-length --watch=${aClient}/${aAppName},${aServer}/${aServerName} &   # .(50926.05b.1)
-
+  
     CLIENT_PID=$!
     echo ""
 #   echo "  Client is running in: $(pwd)/index.html"

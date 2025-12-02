@@ -191,9 +191,9 @@ function setServerAPI_URL() {                                                   
          aClientPath="$( echo "${aServerAPI_URL}" | sed 's|^\(https\?://[^/]*\).*|\1|' | awk '{ sub( /:[0-9]+/, "" ); print }' )"  # .(51017.02.1)
 if [[ "${aClientPath}" =~ .[0-9]+. ]]; then aClientPath="${aClientPath}:${nPort}"; fi
       else
-      if [ ! -f "${aClientDir}/_config.js" ]; then bSave=1                                                                                                                                           # .(51130.04.2)
+      if [ ! -f "${aClientDir}/_config.js" ]; then bSave=1                                                                                                                                           # .(51130.04.2)   
       if [   -f "_config.yaml.js" ]; then cat "_config.yaml.js" | awk '/SERVER_LOCATION/ { print ", \"SERVER_LOCATION\":\"Local\""; next }; { print }' >"${aClient}/${aAppName}/_config.js"; fi      # .(51130.04.3 RAM Fuck you).(51017.04a.5 RAM Copy _config.yaml.js).(51017.04.2)
-         fi                                                                                                                                                                                          # .(51130.04.4)
+         fi                                                                                                                                                                                          # .(51130.04.4)   
          aServerAPI_URL="$( getFVar "LOCAL_API_URL" )";
          aClientPath="$(    getFVar "LOCAL_PATH" )";
          fi

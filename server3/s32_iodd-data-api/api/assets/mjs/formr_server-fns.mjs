@@ -833,10 +833,10 @@
          }; // eof init
 //  ------  ---- ----- =  ------|  -------------------------------- ------------------- ------------------+
 
-function onStart(__filepath) {
-   var  aHostLocation =  process.env.Host_Location  || 'Remote'                                       // .(50703.01.1
+function onStart(__filepath, nPort) {                                                                       // .(51130.03.1)
+   var  aHostLocation =  process.env.Host_Location  || 'Remote'                                             // .(50703.01.1
 
-  if (aAPI_Host === '') {
+  if (aAPI_Host === '' || aHostLocation == "Local") {                                                       // .(51130.03.2 RAM Really)
     console.log(`\n      Server is running at: http://localhost:${nPort}`);
   } else {
 if (aAPI_Host.match( /:/)) {                                                                                // .(50708.01.1 RAM Again)
@@ -868,7 +868,7 @@ function killPort(nPort) {
         setTimeout(() => {
           pApp.listen(nPort, () => {
             const __filepath = new Error().stack.match(/IODD-Server_u.+\.mjs/)[0];
-            onStart(__filepath);
+            onStart(__filepath, nPort);                                                                     // .(51130.03.3)
             resolve();
           }).on('error', (pErr) => {
             console.log('Retry failed:', pErr);
@@ -886,7 +886,7 @@ function killPort(nPort) {
 function startServer( pApp, port, __filepath) {
   pApp.listen(port, () => {
     
-    onStart(__filepath);
+    onStart(__filepath, port);                                                                              // .(51130.03.4)
 
   }).on('error', (pErr) => {
     if (pErr.code === 'EADDRINUSE') {
@@ -929,7 +929,7 @@ function startServer( pApp, port, __filepath) {
 
      const __filepath = new Error().stack.match(/IODD-Server_u.+\.mjs/)[0];    
 
-            pApp.listen( nPort ); onStart(__filepath );   
+            pApp.listen( nPort ); onStart( __filepath, nPort );                                             // .(51130.03.5)
 //          startServer( pApp, nPort, __filepath )    
                         }                 
 //function  getEnv( aFile, bNewOnly ) {                                                                     //#.(30410.02.2 moved to formr_utility-fns_u1.06.mjs)

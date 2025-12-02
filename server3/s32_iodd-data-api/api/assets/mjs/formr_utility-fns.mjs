@@ -37,6 +37,7 @@
 # .(30526.03  5/26/23 RAM  1:25p|  No blank line in sayErr on leading space
 # .(30527.04  5/27/23 RAM  2:55p|  Define aLogNo for sayErr
 # .(30528.02  5/28/23 RAM  1:30p|  Initialize aLogNo with trailing space
+# .(51123.02 11/23/25 RAM  4:00p|  Copy .env file if it doesn't exist
                                 |
 ##SRCE     +====================+===============================================+
 #*/
@@ -49,6 +50,7 @@
         if (typeof(process)!= 'undefined') {
 
        var  inspect         = (await import( 'util' )).inspect                                              // .(30416.02.x RAM no workie)
+       var  path            =  await import( 'path' )                                                       // .(51123.02.1)
        var  pFS             =  await import( 'fs' )                                                         // .(30412.01.7 RAM Get pFS here  so getEnv_sync   doesn't have to be a async function)
 //     var  pFS             =  await import( 'fs/promises' ) { .. }                                         //#.(30412.01.2 RAM Get pFS above so this function doesn't have to be a async function)
             global.aLogNo   = '00000 '                                                                      // .(30528.02.1).(30527.04.1)
@@ -133,9 +135,17 @@ async function  setAPI_URL( pEnv,  aNum ) {                                     
        if (!aFile) { aFile = `${ aPath }.env` }  // Use provided file path or construct default
        // aFile is now set - use it as is
 //     var  pFS     =  await import( 'fs/promises' )                                                        // .(30412.01.2 RAM Get pFS above so this function doesn't have to be a async function)
-            console.log( `getEnv_sync[2]        Reading local file, '${aFile}'` )
-       if (!pFS.default.existsSync( aFile )) { sayEnvErr( aFile );
-    return  process.env }                                     // .(30319.01.1 RAM Do nothing if .env not found).(30322.03.6 RAM Display error)
+//         console.log( `getEnv_sync[2]        Reading local file, '${aFile}'` )
+       if (!pFS.default.existsSync( aFile )) {                                                              // .(51123.02.2 Check .env-local.env or remote file Beg)
+        var aRemote = `${process.env.THE_SERVER}`.match( /formr/i ) ? 'remote' : 'local'
+            aRemote =   (process.fvaRs.SERVER_LOCATION || '').toLowerCase()=='remote' ? 'remote' : aRemote  // .(51124.05.1 RAM Another override)
+        var aFile2  = path.join( aFile.replace( /\.env/, '' ), `api/.env-${aRemote}.env` )
+        if (pFS.default.existsSync( aFile2 )) {                                                            
+            pFS.default.copyFileSync( aFile2, aFile )                                                       // .(51123.02.2 RAM Copy .env-local.env or .env-remote.env to .env)
+               console.log( ` * Copied: '${aFile2}'\n       to: '${aFile}'` )
+            }  }
+       if (!pFS.default.existsSync( aFile )) { sayEnvErr( aFile );                                         
+    return  process.env }                                                                                   // .(30319.01.1 RAM Do nothing if .env not found).(30322.03.6 RAM Display error)
        var  pEnv    =  fmtEnv(  pFS.default.readFileSync( aFile, 'ASCII' ) )
             pEnv    =  bNewOnly ? pVars : { ...process.env,  ...pEnv }
             }

@@ -790,6 +790,7 @@ this.PKCEAuth_getRoute = async function() {
     const webpageRolesViewHandler = (await import('./webpage_roles_view-endpoint.js')).default;
     const rolesHandler = (await import('./roles-endpoint.js')).default;
     const roleUsageHandler = (await import('./role-usage-endpoint.js')).default;
+    const memberResumeHandler = (await import('./member-resume.js')).default;
     
     pApp.get(`${global.aAPI_Host}/auth/callback`, pkceAuthHandler);
     pApp.get(`${global.aAPI_Host}/user/info`, userInfoHandler);
@@ -804,6 +805,7 @@ this.PKCEAuth_getRoute = async function() {
     pApp.post(`${global.aAPI_Host}/role`, rolesHandler);
     pApp.delete(`${global.aAPI_Host}/role`, rolesHandler);
     pApp.get(`${global.aAPI_Host}/role-usage`, roleUsageHandler);
+    pApp.get(`${global.aAPI_Host}/member-resume`, memberResumeHandler);
     
     // Add acm_NextID endpoint
     pApp.post(`${global.aAPI_Host}/nextid`, async (req, res) => {
@@ -853,6 +855,7 @@ this.PKCEAuth_getRoute = async function() {
     sayMsg('post', `${global.aAPI_Host}/role`);
     sayMsg('delete', `${global.aAPI_Host}/role`);
     sayMsg('get', `${global.aAPI_Host}/role-usage`);
+    sayMsg('get', `${global.aAPI_Host}/member-resume`);
     sayMsg('post', `${global.aAPI_Host}/nextid`);
     
     // Add JWT token endpoints

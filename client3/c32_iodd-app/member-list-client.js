@@ -1,11 +1,11 @@
 // Member List Client for webpage_members_info_view
-//       var SERVER_API_URL =  window.fvaRs.SERVER_API_URL;                             //#.(51013.01.9)
+//       var SERVER_API_URL =  window.FVARS.SERVER_API_URL;                             //#.(51013.01.9)
 
 class MemberListClient {
     constructor() {
 //      this.baseUrl        = 'http://localhost:54032/api2';                            //#.(51013.01.9)
 //      this.baseUrl        = 'http://localhost:3004/api';                              //#.(51013.01.9)
-        this.baseUrl        =  window.fvaRs.SERVER_API_URL;                             // .(51013.01.9)
+        this.baseUrl        =  window.FVARS.SERVER_API_URL;                             // .(51013.01.9)
     }
 
     async fetchData(endpoint) {
@@ -187,8 +187,8 @@ async function loadMembersList() {
 // Test server connection first
 async function testServerConnection() {
     try {
-        console.log('Testing server connection to:', window.fvaRs.SERVER_API_URL);
-        const response = await fetch(`${window.fvaRs.SERVER_API_URL}/`);
+        console.log('Testing server connection to:', window.FVARS.SERVER_API_URL);
+        const response = await fetch(`${window.FVARS.SERVER_API_URL}/`);
         console.log('Server response status:', response.status);
         const text = await response.text();
         console.log('Server response:', text.substring(0, 200));

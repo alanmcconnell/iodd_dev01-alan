@@ -126,19 +126,19 @@
     import      '../_config.js'                                                                             // .(51013.02.1 RAM Read this)
 //await import( '../_config.js' )                                                                           //#.(51013.02.1 RAM Load process.fvaR in IODD-Server_u1.08.mjs)
 
-       var  SERVER_PORT               =  process.fvaRs.SERVER_PORT || ''                                    // .(51121.01.4 RAM Hmmm...)
-       var  SERVER_API_URL            =  process.fvaRs.SERVER_API_URL                                       // .(51013.02.3 RAM Define here)
+       var  SERVER_PORT               =  process.FVARS.SERVER_PORT || ''                                    // .(51121.01.4 RAM Hmmm...)
+       var  SERVER_API_URL            =  process.FVARS.SERVER_API_URL                                       // .(51013.02.3 RAM Define here)
             process.env.Local_API_URL =  SERVER_API_URL                                                     // .(51121.01.5 RAM Use fvaR instead)
             process.env.PORT          =  SERVER_API_URL.match(   /:([0-9]+)\/?/)?.slice(1,2)[0] ?? ''       // .(51013.02.3 RAM Define them here)
-            process.env.PORT          =  SERVER_PORT ? SERVER_PORT : process.env.PORT                       // .(51121.01.6 RAM process.fvaRs.SERVER_PORT wins)
+            process.env.PORT          =  SERVER_PORT ? SERVER_PORT : process.env.PORT                       // .(51121.01.6 RAM process.FVARS.SERVER_PORT wins)
             process.env.HOST          =  SERVER_API_URL.match(/(.+):[0-9]+\/?/ )?.slice(1,2)[0] ?? ''       // .(51013.02.4)
             process.env.Local_Host    = `${process.env.HOST}:${process.env.PORT}`                           // .(51013.02.5)
             process.env.Remote_Host   =  new URL(SERVER_API_URL).origin || ''                               // .(51121.01.7 RAM Gotta define this too, But they get overritten below)
             process.env.Local_API_URL =  SERVER_API_URL                                                     // .(51121.01.8)
             process.env.Remote_API_URL=  SERVER_API_URL                                                     // .(51121.01.9)
 
-            process.env.Host_Location =  process.fvaRs.SERVER_LOCATION                                      // .(51013.02.6)
-       var  SECURE_API_URL            =  process.fvaRs.SECURE_API_URL  // not SECURE_PATH                   // .(51013.02.7 RAM Define here)
+            process.env.Host_Location =  process.FVARS.SERVER_LOCATION                                      // .(51013.02.6)
+       var  SECURE_API_URL            =  process.FVARS.SECURE_API_URL  // not SECURE_PATH                   // .(51013.02.7 RAM Define here)
 
        if (!process.env.PORT) { console.log( "* No SERVER_PORT defined."); process.exit() }                 // .(51121.01.10 RAM)
 //  ------  ---- ----- =  ------|  -------------------------------- ------------------- ------------------+
@@ -234,10 +234,10 @@
        var  pApp, pDB, aAPI_Host          // Doesn't work for bQuiet, because it is not used in this module
        var  pApp  =  express()                                                          // .(30406.02.2 RAM pApp is now local to IODD)
 
-            process.fvaRs.CLIENT_HOST = process.fvaRs.CLIENT_PATH.replace( /(:[0-9]+)\/.+/, "$1")                  // .(51013.02.9 RAM Need HOST not PATH) 
+            process.FVARS.CLIENT_HOST = process.FVARS.CLIENT_PATH.replace( /(:[0-9]+)\/.+/, "$1")                  // .(51013.02.9 RAM Need HOST not PATH) 
        // Configure CORS
-       const corsOrigins = [ process.fvaRs.CLIENT_HOST, process.fvaRs.CLIENT_HOST.replace( /\/\/localhost/, "//127.0.0.1" ) // .(51013.02.10 ) RAM Set CORS to      allow the IODD Client pages on a different port)
-                           , process.fvaRs.SECURE_PATH, process.fvaRs.SECURE_PATH.replace( /\/\/localhost/, "//127.0.0.1" ) // .(51013.02.11) RAM Set CORS to also allow the SecureAccess Client pages)
+       const corsOrigins = [ process.FVARS.CLIENT_HOST, process.FVARS.CLIENT_HOST.replace( /\/\/localhost/, "//127.0.0.1" ) // .(51013.02.10 ) RAM Set CORS to      allow the IODD Client pages on a different port)
+                           , process.FVARS.SECURE_PATH, process.FVARS.SECURE_PATH.replace( /\/\/localhost/, "//127.0.0.1" ) // .(51013.02.11) RAM Set CORS to also allow the SecureAccess Client pages)
                            , 'http://127.0.0.1:56785', 'http://localhost:56785' // Add common development origins
                            , 'http://127.0.0.1:5500', 'http://localhost:5500' // Add Live Server default ports
                            , 'http://127.0.0.1:54332', 'http://localhost:54332' // Add client port 54332

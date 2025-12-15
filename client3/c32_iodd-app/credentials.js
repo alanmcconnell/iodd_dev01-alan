@@ -1,3 +1,9 @@
+// Check for 'pkce' parameter in URL first - redirect immediately if not found
+if (!new URLSearchParams(window.location.search).get('pkce')) {
+    const redirectUrl = window.fvaRs?.LOGIN_FAILURE || '/client3/c32_iodd-app/index.html';
+    window.location.href = redirectUrl;
+}
+
 // Listen for navigation events to catch original URL
 window.addEventListener('beforeunload', function() {
     console.log('Page unloading, URL was:', window.location.href);
@@ -93,12 +99,11 @@ sessionStorage.setItem('credentials_processing', 'true');
             console.log('Expected: SecureAccess should store PKCE token in localStorage before redirect');
             console.log('Current app_key (IODD identifier):', localStorage.getItem('app_key'));
             
-            // Clear processing flag and show debug button anyway
+            // Clear processing flag and redirect to index.html
             sessionStorage.removeItem('credentials_processing');
-            // document.getElementById('viewJwtBtn').style.display = 'inline-block';
-            // setTimeout(() => {
-            //     window.location.href = '/client3/c32_iodd-app/index.html';
-            // }, 3000);
+            setTimeout(() => {
+                window.location.href = '/client3/c32_iodd-app/index.html';
+            }, 3000);
             return;
         }
         

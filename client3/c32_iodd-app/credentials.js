@@ -135,7 +135,7 @@ async function processCredentials(pkceToken) {
         }
         
         // Get API URL from config
-        const apiUrl = window.fvaRs?.SERVER_API_URL || 'http://localhost:54382/api2';
+        const apiUrl = window.FVARS?.SERVER_API_URL || 'http://localhost:54382/api2';
         console.log('Using API URL:', apiUrl);
         
         // Fetch member data
@@ -167,12 +167,12 @@ async function processCredentials(pkceToken) {
         console.log('Fetching role for RoleId:', member.RoleId);
         let roleResponse = await fetch(`${apiUrl}/roles?id=${member.RoleId}`);
         
-        if (!roleResponse.ok) {
-            console.log('Trying alternative roles endpoint...');
-            roleResponse = await fetch(`${apiUrl}/roles/${member.RoleId}`);
-        }
+//      if (!roleResponse.ok) {                                                                    // .(51210.02.1 RAM This alternative gets an undefined error Beg)
+//          console.log('Trying alternative roles endpoint...');
+//          roleResponse = await fetch(`${apiUrl}/roles/${member.RoleId}`);
+//      }                                                                                          // .(51210.02.1 End)
         
-        if (!roleResponse.ok) {
+        if (!roleResponse.ok) {                                    
             const errorText = await roleResponse.text();
             console.log('Role fetch error:', errorText);
             throw new Error('Failed to fetch role data: ' + errorText);

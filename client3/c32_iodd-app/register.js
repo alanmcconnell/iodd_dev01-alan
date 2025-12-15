@@ -2,7 +2,7 @@
 
 class Registration {
     constructor() {
-        this.apiBaseUrl = window.fvaRs?.SERVER_API_URL || 'http://localhost:54382/api2';
+        this.apiBaseUrl = window.FVARS?.SERVER_API_URL || 'http://localhost:54382/api2';
         this.init();
     }
 
@@ -91,8 +91,8 @@ class Registration {
                 security_question_2: formData.secureQuestion2,
                 security_answer_2: formData.secureAnswer2,
                 user_app_role: 'Member',
-                app_key: window.fvaRs?.SECURE_APP_KEY || '',
-                url_redirect: window.fvaRs?.failure_URL || 'index.html'
+                app_key: window.FVARS?.SECURE_APP_KEY || '',
+                url_redirect: window.FVARS?.failure_URL || 'index.html'
             };
 
             const tokenResponse = await fetch(`${this.apiBaseUrl}/jwt/create`, {
@@ -105,7 +105,7 @@ class Registration {
 
             if (tokenResponse.ok) {
                 const tokenData = await tokenResponse.json();
-                const loginPage = window.fvaRs?.LOGIN_PAGE || 'index.html';
+                const loginPage = window.FVARS?.LOGIN_PAGE || 'index.html';
                 const loginUrl = `${loginPage}?reg_key=yes&pkce=${encodeURIComponent(tokenData.token)}`;
                 console.log('Redirecting to:', loginUrl);
                 window.location.href = loginUrl;
